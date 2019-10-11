@@ -1,0 +1,45 @@
+<!-- base_generic.html based off of https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Home_page-->
+
+<!DOCTYPE>
+<html lang = "en">
+<head>
+	<!-- creating generic page for TurtleVision app so there is a uniform look and fluidity to the site-->	
+
+	{% block title %}<title>Turtle Vision</title>{% endblock %}
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+	{% load static %}
+	<link rel="shortcut icon" href="{% static 'TurtleVision/images/logo.jpg' %}">
+	<link rel="stylesheet" href="{% static 'TurtleVision/style.css' %}">
+</head>
+
+<body>
+	<!-- The body is going to have a main navigation bar to the left-->
+		<!-- Home Page: explanation of the TurtleVision project, links to sites, etc.-->
+		<!-- "Trust" Admin user: will have rights to upload Turtle Sessions and choose to test intelligence -->
+		<!-- "Train/Test" Guest user: will take them to the 'train' page, at which:-->
+	<!-- The guest user will be able to select the function of the app first:-->
+		<!-- a)breath b)environment c)surface status d)head movement -->
+	<!-- Then the guest user will select the TurtleCam session they wish to view -->
+
+	<!--For now, focusing on the task at hand, I will eventually scale to integrate subapps-->
+	
+	<div class = "container-fluid">
+		<div class="row">
+			<div class = "left-set side-panel">
+			{% block sidebar %}
+        			<ul class="sidebar-nav">
+          				<li><a href="{% url 'TurtleVision:index' %}">Welcome</a></li>
+          				<li><a href="{% url 'TurtleVision:train' %}">Train</a></li>
+          				<li><a href="">All authors</a></li>
+        			</ul>
+     			{% endblock %}
+			</div>
+			<div class = "right-set side-panel">{% block sidecont %}{% endblock %}</div>
+			<div class = "main-cont"> {% block content %}{% endblock %}</div>
+		</div>
+	</div>
+
+</body>
+</html>

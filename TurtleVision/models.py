@@ -66,4 +66,15 @@ class SecondDat(models.Model):
         	return self.sec_id_read
 
 
+# Frame: when a frame is logged to be a certain type by the user, it is added to a list of 'Frames'
+# The Frame list is in development as it will be determined the exact information necesarry to log
+# As the machine learning algorithm is developed.
 
+class Frame(models.Model):
+	movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+	Frame_id_read = models.CharField(max_length=50)
+	second_of_movie = models.TimeField(blank=True, null=True)
+	breath = models.BooleanField(default=False)
+
+	def __str__(self):
+        	return self.Frame_id_read

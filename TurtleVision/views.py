@@ -8,7 +8,34 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.http import HttpResponse
 from django.template import loader
-from .models import Session, Movie
+from .models import Session, Movie, Frame
+
+#access the TurtleVision welcome page--index
+def index(request):
+    num_sessions = Session.objects.all().count()
+    num_movies = Movie.objects.all().count()
+    num_frames = Frame.objects.all().count()
+
+    context = {
+	'num_sessions':num_sessions,
+	'num_movies':num_movies,
+	'num_frames':num_frames,
+    }
+
+    return render(request, 'index.html', context=context)
+
+def train(request):
+    movieChoice = Movie.objects.get(movie_id_read="TC01MOV0001")
+    context={
+	'movie_choice':movieChoice
+    }
+    return render(request, 'train.html', context=context)
+
+def analysisChoice(request):
+    context = {
+
+    }
+    return render(request, 'sessionIndex.html', context=context)
 
 
 
@@ -18,11 +45,10 @@ from .models import Session, Movie
 # Gathers all objects under 'Session' datatype and orders them for display
 def indexSession(request):
     latest_session_list = Session.objects.order_by('-session_num')
-    template = loader.get_template('TurtleVision/index.html')
     context = {
 	'latest_session_list':latest_session_list,
     }
-    return HttpResponse(template.render(context,request))
+    return render(request, 'sessionIndex.html', context=context)
 
 
 
@@ -39,5 +65,3 @@ def indexMovie(request, session_id_read):
 def movieView(request, movie_id_read):
     this_movie = get_object_or_404(Movie, movie_id_read=movie_id_read)
     return render(request, 'TurtleVision/movieView.html', {'file':this_movie})
-
-def markBreath 
