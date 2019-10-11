@@ -14,15 +14,15 @@ from django.db import models
 # Tracking when it was published and where the turtlecam was deployed
 
 class Session(models.Model):
-	session_id_read = models.CharField(max_length=20)
+	session_id = models.CharField(max_length=20)
 	session_num = models.IntegerField(default=0)
-	turtle_id = models.CharField(max_length=20)
+	turtle_id = models.IntegerField(default=0)
 	record_date = models.DateField('date recorded')
 	pub_date = models.DateTimeField('date published')
 	loc_name = models.CharField(default='CEI',max_length=15)
 
 	def __str__(self):
-        	return self.session_id_read
+        	return self.session_id
 
 
 
@@ -33,15 +33,14 @@ class Session(models.Model):
 # video_length is important to match up data points with the row of information
 
 class Movie(models.Model):
-	movie_id_read = models.CharField(max_length=50)
 	session = models.ForeignKey(Session, on_delete=models.CASCADE)
-	movie_path = models.CharField(max_length=200)
-	movie_title = models.CharField(max_length=20)
-	movie_type = models.CharField(default=".mp4",max_length=5)
-	movie_length = models.TimeField(blank=True, null=True)
+	video_path = models.CharField(max_length=200)
+	video_title = models.CharField(max_length=20)
+	video_id = models.CharField(max_length=50)
+	video_length = models.TimeField(blank=True, null=True)
 
 	def __str__(self):
-        	return self.movie_id_read
+        	return self.video_id
 
 
 
@@ -56,14 +55,14 @@ class Movie(models.Model):
 class SecondDat(models.Model):
 	session = models.ForeignKey(Session, on_delete=models.CASCADE)
 	movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-	sec_id_read = models.CharField(max_length=50)
+	sec_id = models.CharField(max_length=50)
 	depth = models.DecimalField(max_digits=3, decimal_places=1)
 	temp = models.DecimalField(max_digits=3, decimal_places=1)
 	seg_time = models.TimeField(blank=True, null=True)
 	session_time = models.TimeField(blank=True, null=True)
 
 	def __str__(self):
-        	return self.sec_id_read
+        	return self.sec_id
 
 
 
