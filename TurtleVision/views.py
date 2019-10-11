@@ -11,6 +11,8 @@ from django.template import loader
 from .models import Session, Movie, Frame
 
 #access the TurtleVision welcome page--index
+#this is the welcome page for the Turtle Vision application. It will provide some dynamic information
+#as well as a breif discription of how the project operates
 def index(request):
     num_sessions = Session.objects.all().count()
     num_movies = Movie.objects.all().count()
@@ -24,6 +26,13 @@ def index(request):
 
     return render(request, 'index.html', context=context)
 
+
+#This is the main host page for the training option. Still working on how exactly to model the selections
+#Ideally there will be dynamic choose selectors on the right panel. 
+#First selection is session from session index
+#second selection is movie from movie index pulled from selected session
+#Third selection is type of analysis
+#Based on type of analysis chosen, the panel will display different set of buttons.
 def train(request):
     movieChoice = Movie.objects.get(movie_id_read="TC01MOV0001")
     context={
@@ -36,6 +45,36 @@ def analysisChoice(request):
 
     }
     return render(request, 'sessionIndex.html', context=context)
+
+
+#establishing breath button action. This function will eventually be called from a condition determined in train page
+#when the breath button is pressed, the frame currently displayed will be logged as "frame" with breath boolean set to true
+def breath(request, movie_id):
+    try:
+        selected_choice = question.choice_set.get(pk=request.POST['Frame'])
+    except (KeyError, Choice.DoesNotExist):
+        # Redisplay the question voting form.
+        return render(request, 'polls/detail.html', {
+            'question': question,
+            'error_message': "You didn't select a choice.",
+        })
+    else:
+        selected_choice.votes += 1
+        selected_choice.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
+
+
+
+
+
+
+
+
+
 
 
 

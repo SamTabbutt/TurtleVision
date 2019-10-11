@@ -12,6 +12,7 @@ urlpatterns = [
 
     path('analysis/', views.analysisChoice, name='analysisChoice'),
 
+
     #train paths: these are the view formats for train
     #access session index: display all the possible session options. List display of all sessions
     path('session/', views.indexSession, name='sessionIndex'),
