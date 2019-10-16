@@ -1,70 +1,31 @@
 from django.shortcuts import render, get_object_or_404
-
-# Create your views here.
-
+from django.views import View
+from django.db import transaction
 from django.http import HttpResponse
-
-
 from django.urls import reverse
-from django.http import HttpResponse
 from django.template import loader
 from .models import Session, Movie, Frame
+from django.views.generic.edit import FormView
+from .forms import VideoForm
+from .datamanage import CSVdump
 
 #access the TurtleVision welcome page--index
 #this is the welcome page for the Turtle Vision application. It will provide some dynamic information
 #as well as a breif discription of how the project operates
-def index(request):
-    num_sessions = Session.objects.all().count()
-    num_movies = Movie.objects.all().count()
-    num_frames = Frame.objects.all().count()
 
-    context = {
-	'num_sessions':num_sessions,
-	'num_movies':num_movies,
-	'num_frames':num_frames,
-    }
+class index(View):
+     def get(self,request):
+          num_sessions = Session.objects.all().count()
+          num_movies = Movie.objects.all().count()
+          num_frames = Frame.objects.all().count()
 
-    return render(request, 'index.html', context=context)
+          context = {
+               'num_sessions':num_sessions,
+               'num_movies':num_movies,
+               'num_frames':num_frames,
+          }
 
-
-#This is the main host page for the training option. Still working on how exactly to model the selections
-#Ideally there will be dynamic choose selectors on the right panel. 
-#First selection is session from session index
-#second selection is movie from movie index pulled from selected session
-#Third selection is type of analysis
-#Based on type of analysis chosen, the panel will display different set of buttons.
-def train(request):
-    movieChoice = Movie.objects.get(movie_id_read="TC01MOV0001")
-    context={
-	'movie_choice':movieChoice
-    }
-    return render(request, 'train.html', context=context)
-
-def analysisChoice(request):
-    context = {
-
-    }
-    return render(request, 'sessionIndex.html', context=context)
-
-
-#establishing breath button action. This function will eventually be called from a condition determined in train page
-#when the breath button is pressed, the frame currently displayed will be logged as "frame" with breath boolean set to true
-def breath(request, movie_id):
-    try:
-        selected_choice = question.choice_set.get(pk=request.POST['Frame'])
-    except (KeyError, Choice.DoesNotExist):
-        # Redisplay the question voting form.
-        return render(request, 'polls/detail.html', {
-            'question': question,
-            'error_message': "You didn't select a choice.",
-        })
-    else:
-        selected_choice.votes += 1
-        selected_choice.save()
-        # Always return an HttpResponseRedirect after successfully dealing
-        # with POST data. This prevents data from being posted twice if a
-        # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+          return render(request, 'index.html', context=context)
 
 
 
@@ -72,35 +33,112 @@ def breath(request, movie_id):
 
 
 
+#TO-DO: create upload class.
+#The upload view will have a form which will let a user upload a series of (very large) videos
+#In addition to blank csv logs
+#This will create a new instance of the "session" model, several new "movie" instances, and a shit ton of seconds
+
+#Before deploying: understand security risk of using forms
+
+class upload(FormView):
+     form_class = VideoForm
+     template_name = 'upload.html'
+     success_url = 'success/'
+    
+     # Form for uploading files: http://www.learningaboutelectronics.com/Articles/How-to-create-a-video-uploader-with-Python-in-Django.php
+     # File to secondDat instances: use csv delimiter https://realpython.com/python-csv/
+     def post(self,request,*args,**kwargs):
+          form_class = self.get_form_class()
+          form = self.get_form(form_class)
+          vid_files = request.FILES.getlist('video_file_field')
+          current_ses = Session(record_date = request.POST.get('session_date'), loc_name = request.POST.get('session_loc'), csv_log = request.FILES['CSV_file_field'])
+          current_ses.save()        
+          if form.is_valid():
+               for f in vid_files:
+                    n = str(f)
+                    newM = Movie(session = current_ses, name = n, videofile = f)
+                    newM.save()
+               #This part is not modular. Figure out a new way to create the second instances. For now use dump function
+               csvIns = CSVdump(current_ses)
+               csvIns.createSeconds()
+               return self.form_valid(form)
+          else:
+               return self.form_invalid(form)
+     
+def uploadSuccess(request):
+     return render(request, 'uploadSuccess.html', {})
 
 
 
 
 
 
-# View accessed at initial entrance to 'train'. This is the outside list layer for sessions
-# To be listed in order of session_num
-# HTML referenced in index.html
-# Gathers all objects under 'Session' datatype and orders them for display
-def indexSession(request):
-    latest_session_list = Session.objects.order_by('-session_num')
-    context = {
-	'latest_session_list':latest_session_list,
-    }
-    return render(request, 'sessionIndex.html', context=context)
+
+#In the train control-panel there will be:
+#	1)a select session option -- SKIP FOR ALPHA
+#	2)a select movie within session option -- SKIP FOR ALPHA
+#	3)a select analysis type section -- SKIP FOR ALPHA
+#	4)TO-DO: buttons that achieve goals of particular analysis
+
+class train(View):
+     def get(self,request,*arg,**kwargs):
+           sessionChoices = Session.objects.all()
+           sessionSelected = kwargs['session_choice']
+           try:
+                movieChoices = Movie.objects.all().filter(session__pk=sessionSelected.pk)
+           except Exception as e:
+                movieChoices = ''
+           context={
+                'session_choices':sessionChoices,
+                'movie_choices':movieChoices
+           }
+           return render(request, 'train.html', context=context)
+     def post(self, request, *args, **kwargs):
+           kwargs={session_choice
+           return HttpResponseRedirect(reverse('train', kwargs))
 
 
 
-# Functions in same light as indexSession. View will be accessed inside of session
-def indexMovie(request, session_id_read):
-    latest_movie_list = Movie.objects.filter(session__session_id_read=session_id_read).order_by('-movie_title')
-    template = loader.get_template('TurtleVision/indexMovie.html')
-    context = {
-	'latest_movie_list':latest_movie_list,
-    }
-    return HttpResponse(template.render(context,request))
+#main goal:
+#	1)a button is pushed on "train" view by human or machine
+#	2)saveFrame is called with the button information and the frame
+#	3)the frame is stored to the correct folder and a new Frame instance is created
+
+#saveFrame is going to be called from jqueary/ajax
+#a paramter will be the type of analysis that is to be booked
+
+#FOR BETA -- the images are going to be saved in their full .png format
+#	in late versions we want the images to be "transformed" (currently taking place in "trust" view) before they are stored for optimal space
+#	for later versions, the frame information ought to be only stored as a field to a model. It is not necesarry to save as .png files
+
+#this part of the program is inspired by https://lethain.com/two-faced-django-part-5-jquery-ajax/
+
+def saveFrame(request):
+     new_frame = Frame.objects.create()
+     movieChoice = Movie.objects.get()
+     context={
+	 'movie_choice':movieChoice
+     }
+     return render(request, 'train.html', context=context)
 
 
-def movieView(request, movie_id_read):
-    this_movie = get_object_or_404(Movie, movie_id_read=movie_id_read)
-    return render(request, 'TurtleVision/movieView.html', {'file':this_movie})
+
+
+
+
+
+
+
+
+
+#The trust section is password protected and only allows admittance to the admin
+#It has information which will explain the process of deep learning
+#There will be a button that executes the model training
+
+#TO-DO: Create AImodel in models.py
+#FOR BETA -- this is where this will happen:
+#https://towardsdatascience.com/a-beginners-tutorial-on-building-an-ai-image-classifier-using-pytorch-6f85cb69cba7
+
+class trust(View):
+      def get(self,request):
+          return render(request, 'trust.html', {})

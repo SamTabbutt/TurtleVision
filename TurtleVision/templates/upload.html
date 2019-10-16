@@ -1,0 +1,31 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Welcome to the upload bar<br><br><br></h1>
+
+<h3>Upload new session</h3><br>
+
+<iframe name="file-upload" src="" style="border: none; visibility: hidden; width: 0; height: 0; position: absolute; top: 0; left: 0;"></iframe>
+
+<form id = "uploadForm" action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for= "session_date">Date recorded: </label>
+    <input id="session_date" type="date" name="session_date" value="">
+    <br><br>
+    <label for= "session_loc">Location: </label>
+    <input id="session_loc" type="text" name="session_loc" macxlength="100">
+    <br><br>
+    <label for= "video_file_field">Videos: </label>
+    <input id="video_file_field" type="file" name="video_file_field" value="" multiple>
+    <br><br>
+    <label for= "CSV_file_field">Log: </label>
+    <input id="CSV_file_field" type="file" name="CSV_file_field" value="">
+    <br><br>
+    <input type="submit" value="Submit">
+</form>
+
+{% load static %}
+<script src={% static "TurtleVision/uploadBar.js" %}></script>
+
+{% endblock %}

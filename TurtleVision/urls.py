@@ -1,28 +1,25 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from . import views
+from TurtleVision.views import index, upload, train, trust
 
 app_name = 'TurtleVision'
 urlpatterns = [
     #index is the opening page for turtlevision
-    path('', views.index, name='index'),
+    path('', index.as_view(), name='index'),
 
-    #train is the guest user's first option
-    path('train/', views.train, name='train'),
+    #upload is going to be a password protected page for admin to upload the videos and blank csv logs
+    path('upload/', upload.as_view(), name='upload'),
 
-    path('analysis/', views.analysisChoice, name='analysisChoice'),
+    path('upload/success/', views.uploadSuccess, name='success'),
 
+    #train is a view class
+    re_path(r'^train/(?P<session_choice>\w+)/(?P<movie_choice>\w+)/(?P<anal_choice>[0-9]{1})/$', train.as_view(), name='train'),
 
-    #train paths: these are the view formats for train
-    #access session index: display all the possible session options. List display of all sessions
-    path('session/', views.indexSession, name='sessionIndex'),
+    #the saveframe function is called by ajax and implimented asynchronously
+    path('train/saveframe/', views.saveFrame, name='saveFrame'),
 
-    #access movies available within a session: List display of all movies within <session_num>
-    path('<session_id_read>/', views.indexMovie, name='MovieIndex'),
-
-    #display movie chosen from movie list with <movie_title>
-    #the url will not be within a session path. From the session movie list the movie redirects
-    #to a movie viewing page
-    path('movie/<movie_id_read>/', views.movieView, name='MovieView'),
+    #the trust view is password protected for admin to run an analysis on a session
+    path('trust/', trust.as_view(), name='trust'),
 
 ]

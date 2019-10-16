@@ -14,16 +14,12 @@ from django.db import models
 # Tracking when it was published and where the turtlecam was deployed
 
 class Session(models.Model):
-	session_id = models.CharField(max_length=20)
-	session_num = models.IntegerField(default=0)
-	turtle_id = models.CharField(max_length=20)
-	record_date = models.DateField('date recorded')
-	pub_date = models.DateTimeField('date published')
-	loc_name = models.CharField(default='CEI',max_length=15)
+        record_date = models.DateField('date recorded', blank=True)
+        loc_name = models.CharField(null=True, max_length=15)
+        csv_log = models.FileField(upload_to='csv/', null=True, verbose_name="")
 
-	def __str__(self):
-        	return self.session_id
-
+        def __str__(self):
+                return self.loc_name+": "+str(self.record_date)
 
 
 # Movie: the session contains about twenty individual movie files that comprise the entirety of
@@ -34,16 +30,11 @@ class Session(models.Model):
 
 class Movie(models.Model):
 	session = models.ForeignKey(Session, on_delete=models.CASCADE)
-	movie_path = models.CharField(max_length=200)
-	movie_title = models.CharField(max_length=20)
-	movie_type = models.CharField(max_length=5)
-	movie_id_read = models.CharField(max_length=50)
-	movie_length = models.TimeField(blank=True, null=True)
+	name = models.CharField(max_length=500)
+	videofile=models.FileField(upload_to='videos/', null=True, verbose_name="")
 
 	def __str__(self):
-        	return self.movie_id_read
-
-
+        	return str(self.pk)+": "+str(self.videofile)
 
 
 # SecondDat: this datatype is considered a single "row" in the analysis of a single turtlecam video
@@ -56,14 +47,13 @@ class Movie(models.Model):
 class SecondDat(models.Model):
 	session = models.ForeignKey(Session, on_delete=models.CASCADE)
 	movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-	sec_id_read = models.CharField(max_length=50)
 	depth = models.DecimalField(max_digits=3, decimal_places=1)
 	temp = models.DecimalField(max_digits=3, decimal_places=1)
 	seg_time = models.TimeField(blank=True, null=True)
 	session_time = models.TimeField(blank=True, null=True)
 
 	def __str__(self):
-        	return self.sec_id_read
+        	return str(self.session)+":"+str(self.movie)+":"+str(self.seg_time)
 
 
 # Frame: when a frame is logged to be a certain type by the user, it is added to a list of 'Frames'
@@ -71,7 +61,6 @@ class SecondDat(models.Model):
 # As the machine learning algorithm is developed.
 
 class Frame(models.Model):
-	movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
 	Frame_id_read = models.CharField(max_length=50)
 	second_of_movie = models.TimeField(blank=True, null=True)
 	breath = models.BooleanField(default=False)
