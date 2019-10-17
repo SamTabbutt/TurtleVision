@@ -19,7 +19,7 @@ class Session(models.Model):
         csv_log = models.FileField(upload_to='csv/', null=True, verbose_name="")
 
         def __str__(self):
-                return self.loc_name+": "+str(self.record_date)
+                return str(self.pk)+self.loc_name+": "+str(self.record_date)
 
 
 # Movie: the session contains about twenty individual movie files that comprise the entirety of
@@ -61,9 +61,8 @@ class SecondDat(models.Model):
 # As the machine learning algorithm is developed.
 
 class Frame(models.Model):
-	Frame_id_read = models.CharField(max_length=50)
-	second_of_movie = models.TimeField(blank=True, null=True)
-	breath = models.BooleanField(default=False)
+        pngFile=models.FileField(upload_to='frames/', null=True, verbose_name="")
+        tag = models.CharField(max_length=10)
 
-	def __str__(self):
-        	return self.Frame_id_read
+        def __str__(self):
+             return self.tag+":"+str(self.pk)

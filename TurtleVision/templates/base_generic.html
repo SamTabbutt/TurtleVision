@@ -11,7 +11,7 @@
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 	{% load static %}
 	<link rel="shortcut icon" href="{% static 'TurtleVision/images/logo.jpg' %}">
-	<link rel="stylesheet" href="{% static 'TurtleVision/style.css' %}">
+	<link rel="stylesheet" href="{% static 'TurtleVision/style.css' now "U" %}">
 </head>
 
 <body>
@@ -30,9 +30,10 @@
 			<div class = "left-set side-panel">
 			{% block sidebar %}
         			<ul class="sidebar-nav">
-          				<li><a href="{% url 'TurtleVision:index' %}">Welcome</a></li>
-          				<li><a href="{% url 'TurtleVision:train' %}">Train</a></li>
-          				<li><a href="">All authors</a></li>
+          				<li><a class="side-elem" href="{% url 'TurtleVision:index' %}">Welcome</a></li>
+					<li><a class="side-elem" href="{% url 'TurtleVision:upload' %}">Upload</a></li>
+          				<li><a class="side-elem" href="{% url 'TurtleVision:train' 72 %}">Train</a></li>
+          				<li><a class="side-elem" href="{% url 'TurtleVision:trust' %}">Trust</a></li>
         			</ul>
      			{% endblock %}
 			</div>

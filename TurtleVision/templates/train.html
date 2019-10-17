@@ -1,32 +1,52 @@
 {% extends "base_generic.html" %}
 
-
 {% block sidecont %}
-     <p>Set up choices</p>
-     <button id="snap" onclick="snap()">Breath</button>
+     <select class="side-elem" name="session-select" id="session-select" data-movies-list="{% url 'TurtleVision:ajax_load_movies' %}" novalidate>
+     	<option value="">Select Session</option>
+     	{% for sess in session_choices %}
+          	<option id="{{sess.pk}}" value="{{sess.pk}}">{{sess.pk}}</option>
+     	{% endfor %}
+     </select>
 
+     <div id="movie-list" data-video="{% url 'TurtleVision:ajax_load_video' %}" novalidate>
+     	<select id ="movie-set" class="side-elem" name="movie-select">
+     	</select>
+     </div>
 
+     <div>
+     	<button id="snapBreath" onclick="snap(1)" class="side-elem">Breath</button>
+     	<canvas id="breathshot" name="breathshot" style="width:90%"></canvas>
+     	<button id="saveBreath" onclick="save(1)" class="side-elem">Save Breath</button>
+     </div>
+
+     <div>
+     	<button id="snapApnea" onclick="snap(2)" class="side-elem">Apnea</button>
+     	<canvas id="apneashot" name="apneashot" style="width:90%"></canvas>
+     	<button id="saveApnea" onclick="save(2)" class="side-elem">Save Apnea</button>
+     </div>
      
 {% endblock %}
 
 {% block content %}
+
+     <h1>Train the model</h1>
+
      {% if movie_choice %}
-	{% with "TurtleVision/"|add:movie_choice.movie_path|add:"/"|add:movie_choice.movie_title|add:"."|add:movie_choice.movie_type as movieSource %}
-		{% load static %}
-		<video id="my_video" width="320" height="240" controls>
- 			<source src={% static movieSource %} type="video/{{movie_choice.movie_type}}">
-			Your browser does not support the video tag.
-		</video>
-                <canvas style="width:300px"></canvas>
-		
 
-{% load static %}
-<script src={% static "TurtleVision/capturingFunctions.js" %}></script>
-		
+		<div class="vid-cont" id="vidc">
+			<video id="my_video" class="vidDisp" autoplay controls>
+				<source src='{{MEDIA_URL}}{{ movie_choice.videofile }}' type="video/mp4">
+				Your browser does not support the video tag.
+			</video>			
+		</div>
 
-	{% endwith %}
       {% else %}
 		<p>No video</p>
       {% endif %}
-{% endblock %}
 
+		<script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
+		{% load static %}
+		<script src={% static "TurtleVision/capturingFunctions.js" %}></script>
+		<script src={% static "TurtleVision/selector.js" %}></script>
+
+{% endblock %}

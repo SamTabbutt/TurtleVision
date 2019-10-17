@@ -14,10 +14,15 @@ urlpatterns = [
     path('upload/success/', views.uploadSuccess, name='success'),
 
     #train is a view class
-    re_path(r'^train/(?P<session_choice>\w+)/(?P<movie_choice>\w+)/(?P<anal_choice>[0-9]{1})/$', train.as_view(), name='train'),
+    #using primary key to refer to videos. may end up being a mistake. We will see
+    re_path(r'^train/(?P<movie_choice>\w+)/$', train.as_view(), name='train'),
 
     #the saveframe function is called by ajax and implimented asynchronously
-    path('train/saveframe/', views.saveFrame, name='saveFrame'),
+    path('ajax/saveframe/', views.saveFrame, name='saveFrame'),
+
+    path('ajax/load-movies/', views.get_movies, name='ajax_load_movies'),
+
+    path('ajax/load-video/', views.load_video, name='ajax_load_video'),
 
     #the trust view is password protected for admin to run an analysis on a session
     path('trust/', trust.as_view(), name='trust'),

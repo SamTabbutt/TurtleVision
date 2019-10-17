@@ -20,13 +20,26 @@ text-align:center;
 width: 15%;
 height:100%;
 background:green;
+z-index:1;
 }
 
 .main-cont{
-clear:center;
+float:left;
 text-align:center;
+width:70%
 }
 
 .sidebar-nav ul li{
 text-decoration:none;
+}
+
+.vid-cont{
+width:100%;
+height:80%;
+z-index:-1;
+}
+
+.vidDisp{
+width:100%;
+height:100%;
 }

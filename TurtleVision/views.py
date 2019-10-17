@@ -6,8 +6,10 @@ from django.urls import reverse
 from django.template import loader
 from .models import Session, Movie, Frame
 from django.views.generic.edit import FormView
+from django.views.generic import TemplateView
 from .forms import VideoForm
 from .datamanage import CSVdump
+from django.http import JsonResponse
 
 #access the TurtleVision welcome page--index
 #this is the welcome page for the Turtle Vision application. It will provide some dynamic information
@@ -80,23 +82,31 @@ def uploadSuccess(request):
 #	3)a select analysis type section -- SKIP FOR ALPHA
 #	4)TO-DO: buttons that achieve goals of particular analysis
 
-class train(View):
-     def get(self,request,*arg,**kwargs):
-           sessionChoices = Session.objects.all()
-           sessionSelected = kwargs['session_choice']
-           try:
-                movieChoices = Movie.objects.all().filter(session__pk=sessionSelected.pk)
-           except Exception as e:
-                movieChoices = ''
-           context={
-                'session_choices':sessionChoices,
-                'movie_choices':movieChoices
-           }
-           return render(request, 'train.html', context=context)
-     def post(self, request, *args, **kwargs):
-           kwargs={session_choice
-           return HttpResponseRedirect(reverse('train', kwargs))
+# using https://stackoverflow.com/questions/33531502/how-can-ajax-work-with-a-dynamic-django-dropdown-list for list update function
 
+class train(View):
+
+     def get(self, request,**kwargs):
+          session_choices = Session.objects.all()
+          movie_choice_pk = kwargs['movie_choice']
+          movie_choice = Movie.objects.all().get(pk=movie_choice_pk)
+          context ={
+               'session_choices':session_choices, 
+               'movie_choice':movie_choice,
+          }
+          return render(request, 'train.html', context=context)
+    
+def get_movies(request):
+     session_pk = request.GET.get('session_choice')
+     session = Session.objects.get(pk=session_pk)
+     movies = Movie.objects.all().filter(session__pk = session_pk)
+
+     return render(request, 'train_seg/movie_list.html', {'movie_choices':movies})
+
+def load_video(request):
+     movie_sel = request.GET.get('movie_choice')
+     src_file = Movie.objects.all().get(pk=movie_sel)
+     return render(request, 'train_seg/load_video.html', {'movie_choice':src_file})
 
 
 #main goal:
@@ -107,19 +117,20 @@ class train(View):
 #saveFrame is going to be called from jqueary/ajax
 #a paramter will be the type of analysis that is to be booked
 
-#FOR BETA -- the images are going to be saved in their full .png format
+#FOR ALPHA -- the images are going to be saved in their full .png format
 #	in late versions we want the images to be "transformed" (currently taking place in "trust" view) before they are stored for optimal space
 #	for later versions, the frame information ought to be only stored as a field to a model. It is not necesarry to save as .png files
 
 #this part of the program is inspired by https://lethain.com/two-faced-django-part-5-jquery-ajax/
 
 def saveFrame(request):
-     new_frame = Frame.objects.create()
-     movieChoice = Movie.objects.get()
-     context={
-	 'movie_choice':movieChoice
-     }
-     return render(request, 'train.html', context=context)
+
+     png = request.POST.get('image')
+     get_tag = request.POST.get('tag')
+     new_frame = Frame(pngFile=png, tag=get_tag)
+     new_frame.save()
+
+     return JsonResponse()
 
 
 
