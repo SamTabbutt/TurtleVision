@@ -1,3 +1,4 @@
+<option value="">Choose Movie</option>
 {% for movie in movie_choices %}
-<option class ="teststyle" value="{{ movie.pk }}">{{ movie.name }}</option>
+<option value="{{MEDIA_URL}}{{ movie.videofile }}">{{ movie.name }}</option>
 {% endfor %}

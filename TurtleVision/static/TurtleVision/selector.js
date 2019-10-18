@@ -14,12 +14,5 @@ $('select[name=session-select]').change(function(){
 
 $('select[name=movie-select]').change(function(){
     var movie_choice = $(this).val();
-    var request_url = $("#movie-list").attr("data-video") ;
-        $.ajax({
-            url: request_url,
-            data: {'movie_choice':movie_choice},
-            success: function(data){
-		$("#vidc").html(data);
-	   }
-    });
+    $("#my_video").attr("src",movie_choice);
 })

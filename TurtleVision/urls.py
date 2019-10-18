@@ -15,7 +15,7 @@ urlpatterns = [
 
     #train is a view class
     #using primary key to refer to videos. may end up being a mistake. We will see
-    re_path(r'^train/(?P<movie_choice>\w+)/$', train.as_view(), name='train'),
+    re_path(r'^train/$', train.as_view(), name='train'),
 
     #the saveframe function is called by ajax and implimented asynchronously
     path('ajax/saveframe/', views.saveFrame, name='saveFrame'),

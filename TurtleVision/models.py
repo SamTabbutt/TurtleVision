@@ -61,7 +61,8 @@ class SecondDat(models.Model):
 # As the machine learning algorithm is developed.
 
 class Frame(models.Model):
-        pngFile=models.FileField(upload_to='frames/', null=True, verbose_name="")
+        img = models.FileField(upload_to='frames/', null=True, verbose_name="")
+        secondCount = models.CharField(max_length=20)
         tag = models.CharField(max_length=10)
 
         def __str__(self):

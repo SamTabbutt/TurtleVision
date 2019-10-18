@@ -19,6 +19,8 @@
      	<button id="saveBreath" onclick="save(1)" class="side-elem">Save Breath</button>
      </div>
 
+     <p id="secToLog"></p>
+
      <div>
      	<button id="snapApnea" onclick="snap(2)" class="side-elem">Apnea</button>
      	<canvas id="apneashot" name="apneashot" style="width:90%"></canvas>
@@ -35,7 +37,7 @@
 
 		<div class="vid-cont" id="vidc">
 			<video id="my_video" class="vidDisp" autoplay controls>
-				<source src='{{MEDIA_URL}}{{ movie_choice.videofile }}' type="video/mp4">
+				<source id="src_grab" src='{{MEDIA_URL}}{{ movie_choice.videofile }}' type="video/mp4">
 				Your browser does not support the video tag.
 			</video>			
 		</div>

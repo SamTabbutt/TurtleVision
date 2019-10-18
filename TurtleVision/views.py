@@ -8,7 +8,7 @@ from .models import Session, Movie, Frame
 from django.views.generic.edit import FormView
 from django.views.generic import TemplateView
 from .forms import VideoForm
-from .datamanage import CSVdump
+from .datamanage import CSVdump, FrameCreate
 from django.http import JsonResponse
 
 #access the TurtleVision welcome page--index
@@ -86,9 +86,9 @@ def uploadSuccess(request):
 
 class train(View):
 
-     def get(self, request,**kwargs):
+     def get(self, request):
           session_choices = Session.objects.all()
-          movie_choice_pk = kwargs['movie_choice']
+          movie_choice_pk = 72
           movie_choice = Movie.objects.all().get(pk=movie_choice_pk)
           context ={
                'session_choices':session_choices, 
@@ -109,6 +109,8 @@ def load_video(request):
      return render(request, 'train_seg/load_video.html', {'movie_choice':src_file})
 
 
+
+
 #main goal:
 #	1)a button is pushed on "train" view by human or machine
 #	2)saveFrame is called with the button information and the frame
@@ -124,13 +126,16 @@ def load_video(request):
 #this part of the program is inspired by https://lethain.com/two-faced-django-part-5-jquery-ajax/
 
 def saveFrame(request):
-
-     png = request.POST.get('image')
-     get_tag = request.POST.get('tag')
-     new_frame = Frame(pngFile=png, tag=get_tag)
+     get_tag = request.GET.get('tag')
+     get_sec = request.GET.get('sec')
+     get_src = request.GET.get('src')
+     s1 = float(get_sec)
+     f1 = FrameCreate(s1,get_src)
+     get_im = f1.grabFrame()
+     new_frame = Frame(tag=get_tag, secondCount=s1, img = get_im)
      new_frame.save()
 
-     return JsonResponse()
+     return JsonResponse(get_tag)
 
 
 
