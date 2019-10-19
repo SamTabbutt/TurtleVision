@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 
 {% block sidecont %}
-     <select class="side-elem" name="session-select" id="session-select" data-movies-list="{% url 'TurtleVision:ajax_load_movies' %}" novalidate>
+     <select class="side-elem button" name="session-select" id="session-select" data-movies-list="{% url 'TurtleVision:ajax_load_movies' %}" novalidate>
      	<option value="">Select Session</option>
      	{% for sess in session_choices %}
           	<option id="{{sess.pk}}" value="{{sess.pk}}">{{sess.pk}}</option>
@@ -9,29 +9,41 @@
      </select>
 
      <div id="movie-list" data-video="{% url 'TurtleVision:ajax_load_video' %}" novalidate>
-     	<select id ="movie-set" class="side-elem" name="movie-select">
+     	<select id ="movie-set" class="side-elem button" name="movie-select">
+     	</select>
+     </div>
+
+     <div id="anal-list">
+     	<select class="side-elem button">
+		<option>Select anal</option>
      	</select>
      </div>
 
      <div>
-     	<button id="snapBreath" onclick="snap(1)" class="side-elem">Breath</button>
+     	<button id="snapBreath" onclick="snap(1)" class="side-elem button">Breath</button>
      	<canvas id="breathshot" name="breathshot" style="width:90%"></canvas>
-     	<button id="saveBreath" onclick="save(1)" class="side-elem">Save Breath</button>
+     	<button id="saveBreath" onclick="save(1)" class="side-elem button">Save Breath</button>
      </div>
 
-     <p id="secToLog"></p>
+     <div>
+         <p id="secToLog" class="side-elem">Sec</p>
+     </div>
 
      <div>
-     	<button id="snapApnea" onclick="snap(2)" class="side-elem">Apnea</button>
+     	<button id="snapApnea" onclick="snap(2)" class="side-elem button">Apnea</button>
      	<canvas id="apneashot" name="apneashot" style="width:90%"></canvas>
-     	<button id="saveApnea" onclick="save(2)" class="side-elem">Save Apnea</button>
+     	<button id="saveApnea" onclick="save(2)" class="side-elem button">Save Apnea</button>
      </div>
      
 {% endblock %}
 
-{% block content %}
+{% block contHead %}
 
-     <h1>Train the model</h1>
+     <h1 class="head-elem">Train the model</h1>
+
+{% endblock %}
+
+{% block content %}
 
      {% if movie_choice %}
 

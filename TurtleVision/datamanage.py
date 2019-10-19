@@ -1,9 +1,11 @@
 #adapted from https://realpython.com/python-csv/
 import csv
 import codecs
-from .models import SecondDat, Session, Movie, Frame
+from .models import SecondDat, Session, Movie, Snip
+from django.conf import settings
 import time
 import cv2
+import pickle
 
 #this CSV is expecting absolutely correct data or the whole program will crash.
 #this is poor form however I will complete the original functionality then return
@@ -42,10 +44,9 @@ class FrameCreate():
           self.source=src1
      
      def grabFrame(self):
-          true_src = 'C:/Users/samta/TurtleCam/' + self.source
-          vidcap = cv2.VideoCapture(true_src)
-          print(true_src+"   "+str(self.second))
+          src = "C:/Users/samta/TurtleCam"+self.source
+          vidcap = cv2.VideoCapture(src)
           vidcap.set(cv2.CAP_PROP_POS_MSEC,self.second*1000)
           hasFrames,image = vidcap.read()
           if hasFrames:
-               return image
+               return imencode(png,image)

@@ -27,18 +27,30 @@
 	
 	<div class = "container-fluid">
 		<div class="row">
-			<div class = "left-set side-panel">
+			<div class = "left-set side-panel sidebar-nav">
 			{% block sidebar %}
-        			<ul class="sidebar-nav">
-          				<li><a class="side-elem" href="{% url 'TurtleVision:index' %}">Welcome</a></li>
-					<li><a class="side-elem" href="{% url 'TurtleVision:upload' %}">Upload</a></li>
-          				<li><a class="side-elem" href="{% url 'TurtleVision:train' %}">Train</a></li>
-          				<li><a class="side-elem" href="{% url 'TurtleVision:trust' %}">Trust</a></li>
-        			</ul>
+                                        {% load static %}
+					<a class="side-elem" href="http://www.ceibahamas.org/"><img src={%static 'TurtleVision/images/CEILogo.png'%} class="logo"></a>
+          				<a class="side-elem" href="{% url 'TurtleVision:index' %}">Welcome</a>
+					<a class="side-elem" href="{% url 'TurtleVision:upload' %}">Upload</a>
+          				<a class="side-elem" href="{% url 'TurtleVision:train' %}">Train</a>
+          				<a class="side-elem" href="{% url 'TurtleVision:trust' %}">Trust</a>
      			{% endblock %}
 			</div>
-			<div class = "right-set side-panel">{% block sidecont %}{% endblock %}</div>
-			<div class = "main-cont"> {% block content %}{% endblock %}</div>
+			<div class = "right-set side-panel">
+				{% load static %}
+				<a class="side-elem" href="http://www.ceibahamas.org/"><img src={%static 'TurtleVision/images/Tlogo.png'%} class="logo"></a>
+				{% block sidecont %}
+				{% endblock %}
+			</div>
+			<div class = "main-cont"> 
+				<div class="header">
+					{% block contHead %}
+					{% endblock %}
+				</div>
+				{% block content %}
+				{% endblock %}
+			</div>
 		</div>
 	</div>
 
