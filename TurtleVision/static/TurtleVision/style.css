@@ -33,6 +33,7 @@ text-align:center;
 width:70%;
 margin-left:auto;
 margin-right:auto;
+margin-top:0;
 }
 
 .vid-cont{
@@ -52,16 +53,16 @@ overflow:hidden;
 display:block;
 margin-left: auto;
 margin-right: auto;
-margin-bottom:10%;
-margin-top:0%;
-padding:5px;
+margin-bottom:5%;
+margin-top:5%;
+padding:0px;
 left: 0;
 right: 0;
 color:#0A2C48;
+position:relative;
 }
 
 .sidebar-nav a{
-padding: 8px 8px 8px 32px;
 text-decoration: none;
 font-size: 25px;
 
@@ -72,8 +73,15 @@ left:0;
 }
 
 .logo{
-display:none;
-8%;
+width:100%;
+left:0;
+top:0;
+}
+
+.cent{
+margin:8px;
+padding:4px;
+font-size:20px;
 }
 
 .button {
@@ -86,4 +94,20 @@ display:none;
 
 .button:hover{
   background-color:#01A6DE;
+}
+
+.header{
+position:relative;
+top:0;
+right:0;
+left:0;
+background-color:#d4fff6;
+height:15%;
+}
+
+.head-elem{
+display:block;
+margin-top:auto;
+margin-bottom:auto;
+top:10px;
 }

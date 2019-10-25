@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 # The goal of the application is to:
 #	1) videos and .csv log uploaded by admin user
@@ -37,6 +38,23 @@ class Movie(models.Model):
         	return str(self.pk)+": "+str(self.videofile)
 
 
+class tag(models.Model):
+        tag_type=models.CharField(max_length=20)
+        tag_val=models.CharField(max_length=20)
+        tag_num=models.IntegerField(default=0)
+
+        def __str__(self):
+             return str(self.tag_type)+":"+str(self.tag_val)
+
+class tagAssign(models.Model):
+	tag=models.ForeignKey(tag, on_delete=models.CASCADE)
+	loss_at_assign=models.DecimalField(max_digits=20,decimal_places=10)
+	accuracy=models.DecimalField(max_digits=20,decimal_places=10)
+
+	def __str__(self):
+		return str(tag)+":"+str(accuracy)
+
+
 # SecondDat: this datatype is considered a single "row" in the analysis of a single turtlecam video
 # These instances were previously filled out manually using excel to complete the analysis
 # The goal of TurtleVision is to automate this process. This datatype will be filled out
@@ -51,19 +69,21 @@ class SecondDat(models.Model):
 	temp = models.DecimalField(max_digits=3, decimal_places=1)
 	seg_time = models.TimeField(blank=True, null=True)
 	session_time = models.TimeField(blank=True, null=True)
+	tag = models.ManyToManyField(tagAssign)
 
 	def __str__(self):
         	return str(self.session)+":"+str(self.movie)+":"+str(self.seg_time)
-
 
 # Frame: when a frame is logged to be a certain type by the user, it is added to a list of 'Frames'
 # The Frame list is in development as it will be determined the exact information necesarry to log
 # As the machine learning algorithm is developed.
 
 class Frame(models.Model):
-        img = models.FileField(upload_to='frames/', null=True, verbose_name="")
-        secondCount = models.CharField(max_length=20)
-        tag = models.CharField(max_length=10)
+        secondCount = models.CharField(max_length=20)        
+        tag = models.ForeignKey(tag, on_delete=models.CASCADE)
+        imgData = models.BinaryField(blank=True)
+        movie = models.ForeignKey(Movie, on_delete=models.CASCADE, blank=True, null=True)
 
         def __str__(self):
-             return self.tag+":"+str(self.pk)
+             return str(self.tag)+":"+str(self.movie)+":"+str(self.secondCount)
+

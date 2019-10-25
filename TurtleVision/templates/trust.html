@@ -1,7 +1,41 @@
 {% extends "base_generic.html" %}
 
+{% block contHead %}
+
+<h1 class ="head-elem">Process TurtleCam Session</h1>
+
+{% endblock %}
+
 {% block content %}
 
-<h1>Process TurtleCam Session</h1>
+	<h4>Run the analysis</h4>
+        <select class="cent button" name="session-select" id="session-select" data-movies-list="{% url 'TurtleVision:ajax_load_movies' %}" novalidate>
+     		<option value="">Select Session</option>
+     		{% for sess in session_choices %}
+          		<option id="{{sess.pk}}" value="{{sess.pk}}">{{sess.pk}}</option>
+     		{% endfor %}
+        </select>
+	<br>
+        <select class="cent button" name="analysis-select" id="analyis-select">
+     		<option value="">Select analysis type</option>
+        	{% for tag in tag_choices %}
+          		<option id="{{tag}}" value="{{tag}}">{{tag}}</option>
+     		{% endfor %}
+        </select>
+	<br>
+        <button onclick="load_and_train()" class="cent button">Load and run training on learning model</button>
+	<br>
+        <button class="cent button">Run tests on learning model</button>
+	<br>
+        <button class="cent button">Run chosen analysis on this session</button>
+
+        <br>
+	
+	
+        <button onclick="pullCSV()" class="cent button" download>Create and download CSV file</button>
+
+	<script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
+	{% load static %}
+	<script src={% static "TurtleVision/trustAction.js" %}></script>
 
 {% endblock %}

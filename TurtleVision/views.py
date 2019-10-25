@@ -1,74 +1,96 @@
-from django.shortcuts import render, get_object_or_404
-from django.views import View
-from django.db import transaction
-from django.http import HttpResponse
-from django.urls import reverse
-from django.template import loader
-from .models import Session, Movie, Frame
+from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
+
 from django.views.generic.edit import FormView
 from django.views.generic import TemplateView
-from .forms import VideoForm
-from .datamanage import CSVdump, FrameCreate
-from django.http import JsonResponse
+from django.views import View
 
-#access the TurtleVision welcome page--index
-#this is the welcome page for the Turtle Vision application. It will provide some dynamic information
-#as well as a breif discription of how the project operates
+#TO-DO: impliment get_object_or_404 (for first deploy)
+from django.shortcuts import render, get_object_or_404
+
+from .models import Session, Movie, SecondDat, tag, tagAssign, Frame
+from .forms import VideoForm
+from .datamanage import CSV, FrameCreate, MovieHLSCreate
+from .dataAnalyze import initiateModel, applyModel
+
+import gc
+
+
+
+
+#TO-DO: update info section to contain more interesting and important information (for first deploy)
+
+#Index class currently displayed as welcome page.
+#called from urls-- path:'' name:'index'
+#refferences-- "welcome" in generic_base
+#imports used-- .models, render
+#returns-- rendered html
+#function-- none/display
 
 class index(View):
-     def get(self,request):
-          num_sessions = Session.objects.all().count()
-          num_movies = Movie.objects.all().count()
-          num_frames = Frame.objects.all().count()
+	def get(self,request):
 
-          context = {
-               'num_sessions':num_sessions,
-               'num_movies':num_movies,
-               'num_frames':num_frames,
-          }
+		num_sessions = Session.objects.all().count()
+		num_movies = Movie.objects.all().count()
+		num_frames = Frame.objects.all().count()
 
-          return render(request, 'index.html', context=context)
+		context = {
+			'num_sessions':num_sessions,
+			'num_movies':num_movies,
+			'num_frames':num_frames,
+		}
 
-
-
+		return render(request, 'index.html', context=context)
 
 
 
 
-#TO-DO: create upload class.
-#The upload view will have a form which will let a user upload a series of (very large) videos
-#In addition to blank csv logs
-#This will create a new instance of the "session" model, several new "movie" instances, and a shit ton of seconds
 
-#Before deploying: understand security risk of using forms
+
+#TO-DO: impliment required user admin login to access page (for first deploy)
+#TO-DO: impliment loading emplem for upload status (for first deploy)
+#TO-DO: impliment red field if no input and form subit attempt (for first deploy)
+
+#upload class is a form for admin users to upload 'Sessions' containing 'Movies' and 'secondDat'
+#called from urls-- path:'upload/' name:'upload'
+#refferences-- "upload" in generic_base
+#imports used-- .forms, .models, FormView, render
+#returns-- valid form confirmation to redirect to success page
+#function-- 
+	#1: displays blank VideoForm via 'upload.html'
+	#2: create instance of model: Session based on date and location
+	#3: access 'datamanage' API to create Movie and secondDat instances
+	# Required input from request -- SessionInfo, Movie list, log.csv with precise format
+
+#inspired by-- http://www.learningaboutelectronics.com/Articles/How-to-create-a-video-uploader-with-Python-in-Django.php https://realpython.com/python-csv/
 
 class upload(FormView):
-     form_class = VideoForm
-     template_name = 'upload.html'
-     success_url = 'success/'
-    
-     # Form for uploading files: http://www.learningaboutelectronics.com/Articles/How-to-create-a-video-uploader-with-Python-in-Django.php
-     # File to secondDat instances: use csv delimiter https://realpython.com/python-csv/
-     def post(self,request,*args,**kwargs):
-          form_class = self.get_form_class()
-          form = self.get_form(form_class)
-          vid_files = request.FILES.getlist('video_file_field')
-          current_ses = Session(record_date = request.POST.get('session_date'), loc_name = request.POST.get('session_loc'), csv_log = request.FILES['CSV_file_field'])
-          current_ses.save()        
-          if form.is_valid():
-               for f in vid_files:
-                    n = str(f)
-                    newM = Movie(session = current_ses, name = n, videofile = f)
-                    newM.save()
-               #This part is not modular. Figure out a new way to create the second instances. For now use dump function
-               csvIns = CSVdump(current_ses)
-               csvIns.createSeconds()
-               return self.form_valid(form)
-          else:
-               return self.form_invalid(form)
-     
+	form_class = VideoForm
+	template_name = 'upload.html'
+	success_url = 'success/'
+	
+	def post(self,request,*args,**kwargs):
+		form_class = self.get_form_class()
+		form = self.get_form(form_class)
+		vid_files = request.FILES.getlist('video_file_field')
+
+		current_ses = Session(record_date = request.POST.get('session_date'), loc_name = request.POST.get('session_loc'), csv_log = request.FILES['CSV_file_field'])
+		current_ses.save()        
+
+		if form.is_valid():
+			fStore = MovieHLSCreate(vid_files)
+			fStore.storeMovies(current_ses)
+              
+			csvIns = CSV(current_ses)
+			csvIns.createSeconds()
+			return self.form_valid(form)
+		else:
+			return self.form_invalid(form)
+
+
+#uploadSuccess is called when upload view has processed a new Session with subcategories successfully
+
 def uploadSuccess(request):
-     return render(request, 'uploadSuccess.html', {})
+	return render(request, 'uploadSuccess.html', {})
 
 
 
@@ -76,13 +98,26 @@ def uploadSuccess(request):
 
 
 
-#In the train control-panel there will be:
-#	1)a select session option -- SKIP FOR ALPHA
-#	2)a select movie within session option -- SKIP FOR ALPHA
-#	3)a select analysis type section -- SKIP FOR ALPHA
-#	4)TO-DO: buttons that achieve goals of particular analysis
 
-# using https://stackoverflow.com/questions/33531502/how-can-ajax-work-with-a-dynamic-django-dropdown-list for list update function
+
+
+
+
+
+#TO-DO: make a user_type which logs who creates tag instances to give more power to admin (for first deploy)
+#TO-DO: extend tag_type options (for first deploy)
+
+#train is meant to display uploaded videos for the common user to enjoy and provide frame instances to the deep learning model if they wish
+#called from urls-- path:'train/' name:'train'
+#refferences-- "train" in generic_base
+#imports used-- .models, render
+#returns-- html page displaying selector with sessions available and an adaptive selector populated based on session decision
+#function-- 
+	#1: Display movie 72 by default, populate session options
+	#2: Display tag_type analysis selectors
+	#3: provide buttons for user to take snap shot of video
+	#4: display video snapshot on the sidepanel
+	#5: provide save button for user to log frame with specified tag
 
 class train(View):
 
@@ -103,6 +138,9 @@ def get_movies(request):
 
      return render(request, 'train_seg/movie_list.html', {'movie_choices':movies})
 
+
+#the django system isn't letting me delete this function. Currently it is not effectlively doing anything
+#Consider chunking video load https://stackoverflow.com/questions/8600843/serving-large-files-with-high-loads-in-django
 def load_video(request):
      movie_sel = request.GET.get('movie_choice')
      src_file = Movie.objects.all().get(pk=movie_sel)
@@ -111,50 +149,95 @@ def load_video(request):
 
 
 
-#main goal:
-#	1)a button is pushed on "train" view by human or machine
-#	2)saveFrame is called with the button information and the frame
-#	3)the frame is stored to the correct folder and a new Frame instance is created
-
-#saveFrame is going to be called from jqueary/ajax
-#a paramter will be the type of analysis that is to be booked
-
-#FOR ALPHA -- the images are going to be saved in their full .png format
-#	in late versions we want the images to be "transformed" (currently taking place in "trust" view) before they are stored for optimal space
-#	for later versions, the frame information ought to be only stored as a field to a model. It is not necesarry to save as .png files
-
-#this part of the program is inspired by https://lethain.com/two-faced-django-part-5-jquery-ajax/
+#saveFrame is called by ajax from the 'train' page 
+#js grabs the current time of streamed video when a button is clicked on the side-panel
+#the button is associated with a 'tag_num' which falls under a 'tag_type'
+#ajax sends data through frameGrabber.js: movie_pk, second, tag
+#saveFrame takes the information and sends to 'datamanage' API to create an instance of Frame
 
 def saveFrame(request):
      get_tag = request.GET.get('tag')
+
      get_sec = request.GET.get('sec')
-     get_src = request.GET.get('src')
      s1 = float(get_sec)
-     f1 = FrameCreate(s1,get_src)
-     get_im = f1.grabFrame()
-     new_frame = Frame(tag=get_tag, secondCount=s1, img = get_im)
-     new_frame.save()
 
-     return JsonResponse(get_tag)
+     get_src_lit = request.GET.get('src')
 
 
+     f1 = FrameCreate(s1,get_src_lit,get_tag)
+     get_im = f1.create()
 
-
-
+     gc.collect()
+     return JsonResponse(get_tag,safe=False)
 
 
 
 
 
 
-#The trust section is password protected and only allows admittance to the admin
-#It has information which will explain the process of deep learning
-#There will be a button that executes the model training
 
-#TO-DO: Create AImodel in models.py
-#FOR BETA -- this is where this will happen:
-#https://towardsdatascience.com/a-beginners-tutorial-on-building-an-ai-image-classifier-using-pytorch-6f85cb69cba7
+
+
+
+
+
+
+
+#TO-DO: understand and develop a deep learning model (for first test)
+#TO-DO: given understanding of learning model make occupySecondData functional (for first test)
+
+#TO-DO: impliment required user admin login to access page (for first deploy)
+#TO-DO: impliment loading emplem for upload status (for first deploy)
+#TO-DO: impliment red field if no input and form subit attempt (for first deploy)
+
+#TO-DO: impliment https://github.com/HHTseng/video-classification (for later updates)
+
+#In early additions, as I gain understanding of GLUON, trust is where all of the data processing will happen
+
+#trust is meant to display options for an administrator to update deep learning models, run a model analysis on a session, and download data on a session
+#called from urls-- path:'trust/' name:'trust'
+#refferences-- "trust" in generic_base
+#returns-- html page displaying selector with sessions available and a selector displayingh the tag_type options
+#function-- 
+	#1: The administrator is able to create and train a deep learning model so far as they have selected a tag_type
+	#2: The administrator is able to analyze a session using the recently created model
+	#3: The administrator is able to download a csv demonstrating the data that has been processed
+
 
 class trust(View):
       def get(self,request):
-          return render(request, 'trust.html', {})
+          session_choices = Session.objects.all()
+          alltags = tag.objects.all().values('tag_type').distinct()
+          context ={
+               'tag_choices':alltags,
+               'session_choices':session_choices, 
+          }
+          return render(request, 'trust.html', context)
+
+	
+def loadAndTrain(request, **kwargs):
+        anal_choice = kwargs['an_type']
+        newM = initiateModel(anal_choice)
+        train_set = newM.createDataArray()
+        newM.defineAndTrainModel(train_set)
+
+        response = HttpResponse("<p>Completed Load</p>")
+        return response
+
+
+def occupySecondDat(request, **kwargs):
+	session_choice = kwargs['session_id']
+	anal_choice = kwargs['an_type']
+	appModelInst = applyModel
+	appmodelInst.fillSessionSeconds
+	return
+
+#adapted from https://studygyaan.com/django/how-to-export-csv-file-with-django
+
+def returnCSV(request, **kwargs):
+	session_choice = kwargs['session_id']
+	current_ses = SecondDat.objects.filter(session__pk=session_choice).order_by('session_time')
+
+	csvIns = CSV(current_ses)
+
+	return csvIns.secondsToCSV()

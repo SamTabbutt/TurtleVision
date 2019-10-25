@@ -48,10 +48,17 @@
      {% if movie_choice %}
 
 		<div class="vid-cont" id="vidc">
-			<video id="my_video" class="vidDisp" autoplay controls>
-				<source id="src_grab" src='{{MEDIA_URL}}{{ movie_choice.videofile }}' type="video/mp4">
-				Your browser does not support the video tag.
-			</video>			
+			<video id="my_video" class="video-js vidDisp" name='' controls>
+				<source id="src_grab" src='\media\videos\MOV_0001.mp4' type="video/mp4">
+				Select a Session and Movie.
+                                 <p class="vjs-no-js">
+    					To view this video please enable JavaScript, and consider upgrading to a
+   					 web browser that
+    					<a href="https://videojs.com/html5-video-support/" target="_blank">
+      					supports HTML5 video
+    					</a>
+  				</p>
+			</video>		
 		</div>
 
       {% else %}
@@ -61,6 +68,7 @@
 		<script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
 		{% load static %}
 		<script src={% static "TurtleVision/capturingFunctions.js" %}></script>
+                <script src={% static "TurtleVision/videoJSExt.js" %}></script>
 		<script src={% static "TurtleVision/selector.js" %}></script>
 
 {% endblock %}
