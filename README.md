@@ -11,7 +11,7 @@ collecting and analyzing marine ecology data via the process of deep neural netw
 and we are curious of the quantitative opportunities held within those qualities which are analyzed. 
 
 The website will have one broad backend function: to take in data input stored from users and classify the hundreds of hours of video data we have.
-The website is constructed with postgreSQL on a django framework. It makes use of CV2 to gather matrices from mp4 videos and uses MXNET GLUON to achieve
+The website is constructed with postgreSQL on a django framework. It makes use of CV2 and pillow to gather matrices from mp4 videos and uses MXNET GLUON to achieve
 deep neural network learning. 
 
 In its current state, the website is in need of some crucial aspects before it is ready to be deployed and marketed to schools around the world.
