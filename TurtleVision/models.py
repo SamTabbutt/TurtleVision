@@ -37,9 +37,14 @@ class Movie(models.Model):
 	def __str__(self):
         	return str(self.pk)+": "+str(self.videofile)
 
+class tagType(models.Model):
+	name = models.CharField(max_length = 20)
+
+	def __str__(self):
+		return str(self.name)
 
 class tag(models.Model):
-        tag_type=models.CharField(max_length=20)
+        tag_type=models.ForeignKey(tagType, on_delete=models.CASCADE)
         tag_val=models.CharField(max_length=20)
         tag_num=models.IntegerField(default=0)
 
@@ -87,3 +92,8 @@ class Frame(models.Model):
         def __str__(self):
              return str(self.tag)+":"+str(self.movie)+":"+str(self.secondCount)
 
+
+class learningModel(models.Model):
+	tag_type = models.ForeignKey(tagType, on_delete=models.CASCADE)
+	create_date_time = models.DateTimeField(auto_now=True)
+	parameters_dir = models.CharField(max_length = 100)

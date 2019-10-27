@@ -16,10 +16,10 @@
      		{% endfor %}
         </select>
 	<br>
-        <select class="cent button" name="analysis-select" id="analyis-select">
+        <select class="cent button" name="analysis-select" id="analysis-select">
      		<option value="">Select analysis type</option>
-        	{% for tag in tag_choices %}
-          		<option id="{{tag}}" value="{{tag}}">{{tag}}</option>
+        	{% for taga in tag_choices %}
+          		<option id="{{taga.pk}}" value="{{taga.pk}}">{{taga}}</option>
      		{% endfor %}
         </select>
 	<br>
@@ -27,7 +27,7 @@
 	<br>
         <button class="cent button">Run tests on learning model</button>
 	<br>
-        <button class="cent button">Run chosen analysis on this session</button>
+        <button onclick="occupy_seconds()" class="cent button">Run chosen analysis on this session</button>
 
         <br>
 	

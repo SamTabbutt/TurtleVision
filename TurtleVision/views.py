@@ -7,9 +7,9 @@ from django.views import View
 #TO-DO: impliment get_object_or_404 (for first deploy)
 from django.shortcuts import render, get_object_or_404
 
-from .models import Session, Movie, SecondDat, tag, tagAssign, Frame
+from .models import Session, Movie, SecondDat, tag, tagAssign, Frame, tagType
 from .forms import VideoForm
-from .datamanage import CSV, FrameCreate, MovieHLSCreate
+from .datamanage import CSV, FrameCreate, MovieHLSCreate, fillSession
 from .dataAnalyze import initiateModel, applyModel
 
 import gc
@@ -165,7 +165,7 @@ def saveFrame(request):
 
 
      f1 = FrameCreate(s1,get_src_lit,get_tag)
-     get_im = f1.create()
+     f1.createFrameInstance()
 
      gc.collect()
      return JsonResponse(get_tag,safe=False)
@@ -207,7 +207,7 @@ def saveFrame(request):
 class trust(View):
       def get(self,request):
           session_choices = Session.objects.all()
-          alltags = tag.objects.all().values('tag_type').distinct()
+          alltags = tagType.objects.all()
           context ={
                'tag_choices':alltags,
                'session_choices':session_choices, 
@@ -217,7 +217,8 @@ class trust(View):
 	
 def loadAndTrain(request, **kwargs):
         anal_choice = kwargs['an_type']
-        newM = initiateModel(anal_choice)
+        tagCat = tagType.objects.get(pk=anal_choice)
+        newM = initiateModel(tagCat)
         train_set = newM.createDataArray()
         newM.defineAndTrainModel(train_set)
 
@@ -228,9 +229,10 @@ def loadAndTrain(request, **kwargs):
 def occupySecondDat(request, **kwargs):
 	session_choice = kwargs['session_id']
 	anal_choice = kwargs['an_type']
-	appModelInst = applyModel
-	appmodelInst.fillSessionSeconds
-	return
+	sessionFill = fillSession(session_choice,anal_choice)
+	sessionFill.occupySeconds()
+	response = HttpResponse("<p>Completed Second Analaysis</p>")
+	return response
 
 #adapted from https://studygyaan.com/django/how-to-export-csv-file-with-django
 

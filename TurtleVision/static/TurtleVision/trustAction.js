@@ -8,13 +8,14 @@ function pullCSV(){
 function load_and_train(){
 	var anal = $("#analysis-select").children("option:selected").val();
 	if(anal!=''){
-		window.location='/TurtleVision/dataAnalyze/upload_and_train/' +'BreathStat';
+		window.location='/TurtleVision/dataAnalyze/upload_and_train/' +anal;
 	}
 }
 
 function occupy_seconds(){
+	var sess = $("#session-select").children("option:selected").val();
 	var anal = $("#analysis-select").children("option:selected").val();
-	if(anal!='' && sess!=''){
-		window.location='/TurtleVision/dataAnalyze/update_seconds/' +'BreathStat'+'/'+sess;
+	if(anal!=''&&sess!=''){
+		window.location='/TurtleVision/dataAnalyze/update_seconds/' +sess +'/'+anal;
 	}
 }

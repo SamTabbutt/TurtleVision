@@ -15,9 +15,13 @@ from PIL import Image
 from mxnet.gluon.data.vision import transforms as trans
 from mxnet import nd
 
-from .models import SecondDat, Session, Movie, Frame, tag
+from .models import SecondDat, Session, Movie, Frame, tag, learningModel
 from django.conf import settings
 from django.http import HttpResponse
+
+from .dataAnalyze import applyModel
+
+import os
 
 
 
@@ -95,20 +99,24 @@ class FrameCreate():
           self.source=src1
           self.tag=tag1
 
-     def create(self):
+     def createFrameInstance(self):
           get_src = str(self.source)[7:]
           src_movie = Movie.objects.all().get(videofile=get_src)
-          get_im = self.grabFrame()
+          norm_nd = self.getNdFromFrame()
+          get_im = self.grabNdBinary(norm_nd)
           new_tag = self.getTag()
 
           new_frame = Frame(tag=new_tag, secondCount=self.second, imgData = get_im, movie=src_movie)
           new_frame.save()
      
-     def grabFrame(self):
+     def getNdFromFrame(self):
           #use cv2 to capture a frame at self.second from self.source to return imagedata [H x W x RGB]
           RootSrc = "C:/Users/samta/TurtleCam"+self.source
           vidcap = cv2.VideoCapture(RootSrc)
+
+          #This function takes an incredibly long time to execute
           vidcap.set(cv2.CAP_PROP_POS_MSEC,self.second*1000)
+
           hasFrames,image = vidcap.read() #stored as 3-D list [H][W][RGB]
 
           #reorganize later.. make class in dataAnalyze
@@ -122,20 +130,43 @@ class FrameCreate():
                                       trans.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
           norm_nd_img = transformer(temp_nd)
+          return norm_nd_img
+
+     def grabNdBinary(self, norm_nd_img):
+          
           norm_nump = norm_nd_img.asnumpy()
           
           np_bytes = pickle.dumps(norm_nump)
           np_base64 = base64.b64encode(np_bytes)
-          if hasFrames:
-               return np_base64
+
+          return np_base64
 
      def getTag(self):
           return tag.objects.get(tag_num=self.tag)
 
 
-
-
-
+class fillSession():
+	def __init__(self,session, anal):
+		self.session = session
+		self.anal = anal
+	
+	def occupySeconds(self):
+		model_in_use = learningModel.objects.filter(tag_type__pk=self.anal).order_by('-create_date_time')[0]
+		movie_list = Movie.objects.filter(session__pk = self.session)
+		application = applyModel(self.anal,model_in_use.parameters_dir,self.session)
+		for movie in movie_list:
+			second_list = SecondDat.objects.filter(movie__pk = movie.pk)
+			for second in second_list:
+				sec = second.seg_time
+				src = '/media/'+str(second.movie.videofile)
+				tag = 0
+				(h, m, s) = str(sec).split(':')
+				result = int(h) * 3600 + int(m) * 60 + int(s)
+				newFrame = FrameCreate(result, src, tag)
+				if newFrame:
+					nd_img = newFrame.getNdFromFrame()
+					application.saveSecond(nd_img)
+				
 
 
 #TO-DO: finish for deployment (for first deploy). At the moment in its first stage
