@@ -19,7 +19,7 @@ data_ctx = ctx
 model_ctx = ctx
 
 batch_size = 30
-num_inputs = 65025
+num_inputs = 195075
 num_outputs = 2
 
 num_examples = 380
@@ -35,6 +35,7 @@ def evaluate_accuracy(data_iterator, net):
     acc = mx.metric.Accuracy()
     for i, (data, label) in enumerate(data_iterator):
         data = data.as_in_context(model_ctx).reshape((0,num_inputs))
+        print(data.shape)
         label = label.as_in_context(model_ctx)
         output = net(data)
         predictions = nd.argmax(output, axis=1, keepdims=True)
@@ -115,12 +116,17 @@ class applyModel():
 		print(self.path)
 		self.net.load_parameters(self.path, ctx=ctx)
 
-	def saveSecond(self,nd_img):
+	def saveSecond(self,nd_img, sec):
+		print(str(sec)+" img shape:")
 		print(nd_img.shape)
-		reshaped = nd_img.as_in_context(model_ctx).reshape((0,num_inputs))
+		reshaped = nd_img.as_in_context(model_ctx).reshape((1,num_inputs))
 		print(reshaped.shape)
 		output = self.net(reshaped)
 		print(output)
 		pred = nd.argmax(output, axis=1, keepdims=True)
+		print("0 for breath 1 for apnea:")
 		print(pred)
+		acc = mx.metric.Accuracy()
+		acc.update(preds=pred, labels=nd.array([[1.]]))
+		print("estimate accuracy:" + str(acc.get()))
 		return

@@ -18,19 +18,9 @@
 </head>
 
 <body>
-	<!-- The body is going to have a main navigation bar to the left-->
-		<!-- Home Page: explanation of the TurtleVision project, links to sites, etc.-->
-		<!-- "Trust" Admin user: will have rights to upload Turtle Sessions and choose to test intelligence -->
-		<!-- "Train/Test" Guest user: will take them to the 'train' page, at which:-->
-	<!-- The guest user will be able to select the function of the app first:-->
-		<!-- a)breath b)environment c)surface status d)head movement -->
-	<!-- Then the guest user will select the TurtleCam session they wish to view -->
-
-	<!--For now, focusing on the task at hand, I will eventually scale to integrate subapps-->
-	
 	<div class = "container-fluid">
 		<div class="row">
-			<div class = "left-set side-panel sidebar-nav">
+			<div class = "left-set side-panel sidebar-nav column">
 			{% block sidebar %}
                                         {% load static %}
 					<a class="side-elem" href="http://www.ceibahamas.org/"><img src={%static 'TurtleVision/images/TLogo.png'%} class="logo"></a>
@@ -40,18 +30,18 @@
           				<a class="side-elem" href="{% url 'TurtleVision:trust' %}">Trust</a>
      			{% endblock %}
 			</div>
-			<div class = "right-set side-panel">
-				{% load static %}
-				<a class="side-elem" href="http://www.ceibahamas.org/"><img src={%static 'TurtleVision/images/Tlogo.png'%} class="logo"></a>
-				{% block sidecont %}
-				{% endblock %}
-			</div>
-			<div class = "main-cont"> 
+			<div class = "main-cont column"> 
 				<div class="header">
 					{% block contHead %}
 					{% endblock %}
 				</div>
 				{% block content %}
+				{% endblock %}
+			</div>
+			<div class = "right-set side-panel column">
+				{% load static %}
+				<a class="side-elem" href="http://www.ceibahamas.org/"><img src={%static 'TurtleVision/images/Tlogo.png'%} class="logo"></a>
+				{% block sidecont %}
 				{% endblock %}
 			</div>
 		</div>

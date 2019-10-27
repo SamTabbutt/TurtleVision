@@ -125,13 +125,16 @@ class train(View):
           session_choices = Session.objects.all()
           movie_choice_pk = 72
           movie_choice = Movie.objects.all().get(pk=movie_choice_pk)
+          tag_choices = tagType.objects.all()
           context ={
+               'tag_choices':tag_choices,
                'session_choices':session_choices, 
                'movie_choice':movie_choice,
           }
           return render(request, 'train.html', context=context)
     
 def get_movies(request):
+     print("here")
      session_pk = request.GET.get('session_choice')
      session = Session.objects.get(pk=session_pk)
      movies = Movie.objects.all().filter(session__pk = session_pk)

@@ -114,6 +114,8 @@ class FrameCreate():
           RootSrc = "C:/Users/samta/TurtleCam"+self.source
           vidcap = cv2.VideoCapture(RootSrc)
 
+
+          #perhaps a much quicker method for grabbing frames https://gist.github.com/kylemcdonald/85d70bf53e207bab3775
           #This function takes an incredibly long time to execute
           vidcap.set(cv2.CAP_PROP_POS_MSEC,self.second*1000)
 
@@ -165,7 +167,7 @@ class fillSession():
 				newFrame = FrameCreate(result, src, tag)
 				if newFrame:
 					nd_img = newFrame.getNdFromFrame()
-					application.saveSecond(nd_img)
+					application.saveSecond(nd_img, sec)
 				
 
 

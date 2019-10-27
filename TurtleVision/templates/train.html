@@ -13,11 +13,14 @@
      	</select>
      </div>
 
-     <div id="anal-list">
-     	<select class="side-elem button">
-		<option>Select anal</option>
-     	</select>
-     </div>
+     <select class="side-elem button" name="anal-select" id="anal-list">
+     	<option value="">Select Analysis</option>
+	<option value="JustWatch">Just Watch</option>
+	<option value="DirectAnalysis">Direct Analysis</option>
+     	{% for tag in tag_choices %}
+          	<option id="{{tag.pk}}" value="{{tag.pk}}">{{tag}}</option>
+     	{% endfor %}
+     </select>
 
      <div>
      	<button id="snapBreath" onclick="snap(1)" class="side-elem button">Breath</button>
@@ -34,6 +37,12 @@
      	<canvas id="apneashot" name="apneashot" style="width:90%"></canvas>
      	<button id="saveApnea" onclick="save(2)" class="side-elem button">Save Apnea</button>
      </div>
+
+<script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
+		{% load static %}
+		<script src={% static "TurtleVision/capturingFunctions.js" %}></script>
+                <script src={% static "TurtleVision/videoJSExt.js" %}></script>
+		<script src={% static "TurtleVision/selector.js" %}></script>
      
 {% endblock %}
 
@@ -64,11 +73,5 @@
       {% else %}
 		<p>No video</p>
       {% endif %}
-
-		<script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
-		{% load static %}
-		<script src={% static "TurtleVision/capturingFunctions.js" %}></script>
-                <script src={% static "TurtleVision/videoJSExt.js" %}></script>
-		<script src={% static "TurtleVision/selector.js" %}></script>
 
 {% endblock %}

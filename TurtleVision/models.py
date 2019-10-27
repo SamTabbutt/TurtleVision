@@ -55,6 +55,7 @@ class tagAssign(models.Model):
 	tag=models.ForeignKey(tag, on_delete=models.CASCADE)
 	loss_at_assign=models.DecimalField(max_digits=20,decimal_places=10)
 	accuracy=models.DecimalField(max_digits=20,decimal_places=10)
+	assigned_by = models.CharField(max_length = 100)
 
 	def __str__(self):
 		return str(tag)+":"+str(accuracy)
