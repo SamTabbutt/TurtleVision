@@ -17,6 +17,7 @@ from django.contrib.postgres.fields import ArrayField
 class Session(models.Model):
         record_date = models.DateField('date recorded', blank=True)
         loc_name = models.CharField(null=True, max_length=15)
+        turtle_name = models.CharField(max_length = 20)
         csv_log = models.FileField(upload_to='csv/', null=True, verbose_name="")
 
         def __str__(self):
@@ -51,14 +52,21 @@ class tag(models.Model):
         def __str__(self):
              return str(self.tag_type)+":"+str(self.tag_val)
 
-class tagAssign(models.Model):
-	tag=models.ForeignKey(tag, on_delete=models.CASCADE)
-	loss_at_assign=models.DecimalField(max_digits=20,decimal_places=10)
-	accuracy=models.DecimalField(max_digits=20,decimal_places=10)
-	assigned_by = models.CharField(max_length = 100)
+class learningModel(models.Model):
+	tag_type = models.ForeignKey(tagType, on_delete=models.CASCADE)
+	create_date_time = models.DateTimeField(auto_now=True)
+	parameters_dir = models.CharField(max_length = 100)
 
 	def __str__(self):
-		return str(tag)+":"+str(accuracy)
+		return str(self.tag_type)+":"+str(create_date_time)
+
+class tagAssign(models.Model):
+	tag=models.ForeignKey(tag, on_delete=models.CASCADE)
+	accuracy=models.DecimalField(max_digits=20,decimal_places=10)
+	assigned_by = models.ForeignKey(learningModel, on_delete=models.CASCADE)
+
+	def __str__(self):
+		return str(self.tag)
 
 
 # SecondDat: this datatype is considered a single "row" in the analysis of a single turtlecam video
@@ -92,9 +100,3 @@ class Frame(models.Model):
 
         def __str__(self):
              return str(self.tag)+":"+str(self.movie)+":"+str(self.secondCount)
-
-
-class learningModel(models.Model):
-	tag_type = models.ForeignKey(tagType, on_delete=models.CASCADE)
-	create_date_time = models.DateTimeField(auto_now=True)
-	parameters_dir = models.CharField(max_length = 100)

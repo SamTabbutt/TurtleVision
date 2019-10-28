@@ -1,11 +1,9 @@
 //Code adapted from https://html5multimedia.com/code/ch9/video-canvas-screenshot.html
 // Get handles on the video and canvas elements
 var video= document.getElementById('my_video');
-var BreathCanvas = document.getElementById('breathshot');
-var ApneaCanvas = document.getElementById('apneashot');
+var canvas = document.getElementById('snapcanvas');
 // Get a handle on the 2d context of the canvas element
-var BreathContext = BreathCanvas.getContext('2d');
-var ApneaContext = ApneaCanvas.getContext('2d');
+var context = canvas.getContext('2d');
 // Define some vars required later
 var w, h, ratio;
 	
@@ -19,21 +17,14 @@ video.addEventListener('loadedmetadata', function() {
 			// Calculate the height based on the video's width and the ratio
 			h = parseInt(w / ratio, 10);
 			// Set the canvas width and height to the values just calculated
-			ApneaCanvas.width = w;
-			ApneaCanvas.height = h;
-			BreathCanvas.width = w;	
-			BreathCanvas.height = h;		
+			canvas.width = w;
+			canvas.height = h;		
 		}, false);
 
 
 		
 // Takes a snapshot of the video
-function snap(a) {
-        if(a==1){
-             context=BreathContext;
-        }else{
-             context=ApneaContext;
-        }
+function snap() {
 	// Define the size of the rectangle that will be filled (basically the entire element)
 	context.fillRect(0, 0, w, h);
 	// Grab the image from the video

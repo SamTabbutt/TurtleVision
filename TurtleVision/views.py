@@ -134,7 +134,6 @@ class train(View):
           return render(request, 'train.html', context=context)
     
 def get_movies(request):
-     print("here")
      session_pk = request.GET.get('session_choice')
      session = Session.objects.get(pk=session_pk)
      movies = Movie.objects.all().filter(session__pk = session_pk)
@@ -142,12 +141,11 @@ def get_movies(request):
      return render(request, 'train_seg/movie_list.html', {'movie_choices':movies})
 
 
-#the django system isn't letting me delete this function. Currently it is not effectlively doing anything
-#Consider chunking video load https://stackoverflow.com/questions/8600843/serving-large-files-with-high-loads-in-django
-def load_video(request):
-     movie_sel = request.GET.get('movie_choice')
-     src_file = Movie.objects.all().get(pk=movie_sel)
-     return render(request, 'train_seg/load_video.html', {'movie_choice':src_file})
+def load_tags(request):
+     tag_type_recieved = request.GET.get('anal_choice')
+     tags = tag.objects.filter(tag_type__pk = tag_type_recieved)
+
+     return JsonResponse(tags,safe=False)
 
 
 

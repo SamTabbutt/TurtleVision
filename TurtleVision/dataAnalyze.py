@@ -11,7 +11,7 @@ from PIL import Image
 import gc
 import time
 
-from .models import Frame, tag, learningModel
+from .models import Frame, tag, learningModel, tagAssign
 
 
 ctx = mx.gpu() if mx.test_utils.list_gpus() else mx.cpu()
@@ -116,7 +116,7 @@ class applyModel():
 		print(self.path)
 		self.net.load_parameters(self.path, ctx=ctx)
 
-	def saveSecond(self,nd_img, sec):
+	def saveSecond(self,nd_img, sec, second):
 		print(str(sec)+" img shape:")
 		print(nd_img.shape)
 		reshaped = nd_img.as_in_context(model_ctx).reshape((1,num_inputs))
@@ -126,7 +126,28 @@ class applyModel():
 		pred = nd.argmax(output, axis=1, keepdims=True)
 		print("0 for breath 1 for apnea:")
 		print(pred)
-		acc = mx.metric.Accuracy()
-		acc.update(preds=pred, labels=nd.array([[1.]]))
-		print("estimate accuracy:" + str(acc.get()))
+		pred_np = pred.asnumpy()
+		
+		guess_val = pred_np[0,0]+1
+
+		print(guess_val)
+		
+		get_tag = tag.objects.all().get(tag_num=guess_val)
+		
+		thisModelSet = learningModel.objects.filter(parameters_dir = self.path).order_by('-create_date_time')
+
+		print(thisModelSet)
+
+		thisModel=thisModelSet[0]
+
+		print(thisModel)
+
+		newTag = tagAssign(tag = get_tag, accuracy=0, assigned_by= thisModel)
+		
+		#newTag.save()
+
+		#second.tag.add(newTag)
+
+		print("done")
+		
 		return

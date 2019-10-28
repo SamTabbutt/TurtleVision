@@ -4,39 +4,57 @@
      <select class="side-elem button" name="session-select" id="session-select" data-movies-list="{% url 'TurtleVision:ajax_load_movies' %}" novalidate>
      	<option value="">Select Session</option>
      	{% for sess in session_choices %}
-          	<option id="{{sess.pk}}" value="{{sess.pk}}">{{sess.pk}}</option>
+          	<option id="{{sess.pk}}" value="{{sess.pk}}">{{sess}}</option>
      	{% endfor %}
      </select>
 
-     <div id="movie-list" data-video="{% url 'TurtleVision:ajax_load_video' %}" novalidate>
+     <div id="movie-list">
      	<select id ="movie-set" class="side-elem button" name="movie-select">
      	</select>
      </div>
 
      <select class="side-elem button" name="anal-select" id="anal-list">
      	<option value="">Select Analysis</option>
-	<option value="JustWatch">Just Watch</option>
-	<option value="DirectAnalysis">Direct Analysis</option>
+	<option value="">Just Watch</option>
+	<option value="">Direct Analysis</option>
      	{% for tag in tag_choices %}
           	<option id="{{tag.pk}}" value="{{tag.pk}}">{{tag}}</option>
      	{% endfor %}
      </select>
 
      <div>
-     	<button id="snapBreath" onclick="snap(1)" class="side-elem button">Breath</button>
-     	<canvas id="breathshot" name="breathshot" style="width:90%"></canvas>
-     	<button id="saveBreath" onclick="save(1)" class="side-elem button">Save Breath</button>
-     </div>
-
-     <div>
          <p id="secToLog" class="side-elem">Sec</p>
      </div>
 
      <div>
-     	<button id="snapApnea" onclick="snap(2)" class="side-elem button">Apnea</button>
-     	<canvas id="apneashot" name="apneashot" style="width:90%"></canvas>
-     	<button id="saveApnea" onclick="save(2)" class="side-elem button">Save Apnea</button>
+     	<canvas id="snapcanvas" name="snapcanvas" style="width:90%"></canvas>
      </div>
+
+<div id = "tags" tag_choices_list = "{% url 'TurtleVision:ajax_load_tags' %}" val={{tags}} nonvalidate>
+<!--TO-DO: make this auto-populated based on selection made in 'anal-selector'. Involves understanding passing information between html within js-->
+     <div>
+     	<button id="snapBreath" onclick="snap()" class="side-elem button BreathStatus">Breath</button>
+     	<button id="saveBreath" onclick="save(1)" class="side-elem button BreathStatus">Save Breath</button>
+     </div>
+
+     <div>
+     	<button id="snapApnea" onclick="snap()" class="side-elem button BreathStatus">Apnea</button>
+     	<button id="saveApnea" onclick="save(2)" class="side-elem button BreathStatus">Save Apnea</button>
+     </div>
+
+     <div>
+     	<button id="snapDive" onclick="snap()" class="side-elem button SurfaceTime">Diving</button>
+     	<button id="saveDive" onclick="save(3)" class="side-elem button SurfaceTime">Save Dive</button>
+     </div>
+
+     <div>
+     	<button id="snapSurf" onclick="snap()" class="side-elem button SurfaceTime">On Surface</button>
+     	<button id="saveSurf" onclick="save(4)" class="side-elem button SurfaceTime">Save On Surface</button>
+     </div>
+</div>
+
+
+
 
 <script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
 		{% load static %}
@@ -57,7 +75,7 @@
      {% if movie_choice %}
 
 		<div class="vid-cont" id="vidc">
-			<video id="my_video" class="video-js vidDisp" name='' controls>
+			<video id="my_video" class="video-js vidDisp" name='my_video' controls>
 				<source id="src_grab" src='\media\videos\MOV_0001.mp4' type="video/mp4">
 				Select a Session and Movie.
                                  <p class="vjs-no-js">
@@ -75,3 +93,4 @@
       {% endif %}
 
 {% endblock %}
+

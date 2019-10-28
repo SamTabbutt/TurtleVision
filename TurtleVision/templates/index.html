@@ -11,12 +11,14 @@
 {% block content %}
 	    <div class = "welcome-display">
 		<!--Insert video loop for welcome. Exists in same format as view video-->
-		<h4> There's a lot of stuff going on here </h4>
+		<h4> A machine-learning interface for wildlife observation </h4>
 		<div class = "dynamic-data">
 			<h3 class ="section-head"> Here is some dynamic data </p>
 			<p> Current number of sessions uploaded: {{num_sessions}}</p>
 			<p> Current number of videos uploaded: {{num_movies}}</p>
 			<p> Current number of frames logged: {{num_frames}}</p>
+			{% load static %}
+			<img src = {%static 'TurtleVision/images/TLogo.png'%}>
 
 		</div>
 	    </div>

@@ -74,7 +74,7 @@ class CSV():
 		for tagtype in alltags:
 			firstrowList.append(str(tagtype))
 			firstrowList.append('Confidence')
-			firstrowList.append('Loss Value')
+			firstrowList.append('Tagged By')
 		writer.writerow(firstrowList)
 
 		for second in current_ses:
@@ -82,7 +82,7 @@ class CSV():
 			for t in second.tag.all():
 				currentSecList.append(t.tag.tag_val)
 				currentSecList.append(str(t.accuracy))
-				currentSecList.append(str(t.loss_at_assign))
+				currentSecList.append(str(t.assignedBy))
 			writer.writerow(currentSecList)
 		return response
 
@@ -102,7 +102,7 @@ class FrameCreate():
      def createFrameInstance(self):
           get_src = str(self.source)[7:]
           src_movie = Movie.objects.all().get(videofile=get_src)
-          norm_nd = self.getNdFromFrame()
+          (hasFrames, norm_nd) = self.getNdFromFrame()
           get_im = self.grabNdBinary(norm_nd)
           new_tag = self.getTag()
 
@@ -119,20 +119,23 @@ class FrameCreate():
           #This function takes an incredibly long time to execute
           vidcap.set(cv2.CAP_PROP_POS_MSEC,self.second*1000)
 
-          hasFrames,image = vidcap.read() #stored as 3-D list [H][W][RGB]
+          (hasFrames,image) = vidcap.read() #stored as 3-D list [H][W][RGB]
 
-          #reorganize later.. make class in dataAnalyze
-          img_nump = np.asarray(image)
-          temp_nd = nd.array(img_nump)
+          if hasFrames:
+               #reorganize later.. make class in dataAnalyze
+               img_nump = np.asarray(image)
+               temp_nd = nd.array(img_nump)
 
 
-          transformer = trans.Compose([trans.Resize(300),
-                                      trans.CenterCrop(255),
-                                      trans.ToTensor(),
-                                      trans.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+               transformer = trans.Compose([trans.Resize(300),
+                                                trans.CenterCrop(255),
+                                                trans.ToTensor(),
+                                                trans.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
-          norm_nd_img = transformer(temp_nd)
-          return norm_nd_img
+               norm_nd_img = transformer(temp_nd)
+               return hasFrames,norm_nd_img
+          else:
+               return hasFrames,'null'
 
      def grabNdBinary(self, norm_nd_img):
           
@@ -164,10 +167,12 @@ class fillSession():
 				tag = 0
 				(h, m, s) = str(sec).split(':')
 				result = int(h) * 3600 + int(m) * 60 + int(s)
+				print(src)
 				newFrame = FrameCreate(result, src, tag)
-				if newFrame:
-					nd_img = newFrame.getNdFromFrame()
-					application.saveSecond(nd_img, sec)
+				(hasFrames,nd_img) = newFrame.getNdFromFrame()
+				print(hasFrames)
+				if(hasFrames):
+					application.saveSecond(nd_img, sec, second)
 				
 
 
@@ -188,6 +193,9 @@ class MovieHLSCreate():
                newM = Movie(session = current_ses, name = n, videofile = fHLS)
                newM.save()
 
+def handle_uploaded_file(f):
+	return
+
 #adopted from https://github.com/aminyazdanpanah/python-ffmpeg-video-streaming/blob/master/examples/hls/hls.py
 
 def HLSForm(f):
@@ -198,3 +206,4 @@ def HLSForm(f):
             .format('libx264')
             .auto_rep()
     )
+

@@ -22,7 +22,7 @@ urlpatterns = [
 
     path('ajax/load-movies/', views.get_movies, name='ajax_load_movies'),
 
-    path('ajax/load-video/', views.load_video, name='ajax_load_video'),
+    path('ajax/load-tags/', views.load_tags, name='ajax_load_tags'),
 
     #the trust view is password protected for admin to run an analysis on a session
     path('trust/', trust.as_view(), name='trust'),
