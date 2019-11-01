@@ -26,6 +26,7 @@ from django.http import HttpResponse
 from .dataAnalyze import applyModel
 
 import os
+import gc
 
 
 
@@ -176,21 +177,43 @@ class fillSession():
 		start_time = time.time()
 		for movie in movie_list:
 			second_list = SecondDat.objects.filter(movie__pk = movie.pk)
+			src = '/media/'+str(movie.videofile)
+			RootSrc = "C:/Users/samta/TurtleCam"+src
+			print(RootSrc)
+			newStream = FileVideoStream(RootSrc).start()
 			for second in second_list:
 				sec = second.seg_time
-				src = '/media/'+str(second.movie.videofile)
-				tag = 0
 				(h, m, s) = str(sec).split(':')
 				result = int(h) * 3600 + int(m) * 60 + int(s)
 				print(src)
-				newFrame = FrameCreate(result, src, tag)
-				(hasFrames,image) = newFrame.getFrameFromSec()
-				(hasFrames,nd_img) = getNdFromFrame(hasFrames,image)
+				hasFrames = newStream.more()
 				print(hasFrames)
-				if(hasFrames):
+				if(hasFrames and result>590):
+					image = newStream.read()
+					(hasFrames,nd_img) = getNdFromFrame(hasFrames,image)
 					application.saveSecond(nd_img, sec, second)
+			newStream.stop()
+			gc.collect()
 		elapsed_time = time.time() - start_time
 		print(elapsed_time)
+
+#for movie in movie_list:
+#			second_list = SecondDat.objects.filter(movie__pk = movie.pk)			
+#			for second in second_list:
+#				sec = second.seg_time
+#				src = '/media/'+str(second.movie.videofile)
+#				tag = 0
+#				(h, m, s) = str(sec).split(':')
+#				result = int(h) * 3600 + int(m) * 60 + int(s)
+#				print(src)
+#				newFrame = FrameCreate(result, src, tag)
+#				(hasFrames,image) = newFrame.getFrameFromSec()
+#				(hasFrames,nd_img) = getNdFromFrame(hasFrames,image)
+#				print(hasFrames)
+#				if(hasFrames):
+#					application.saveSecond(nd_img, sec, second)
+#		elapsed_time = time.time() - start_time
+#		print(elapsed_time)
 				
 
 class FileVideoStream():
@@ -239,9 +262,9 @@ class FileVideoStream():
 				if self.transform:
 					frame = self.transform(frame)
 
-				if self.currentFrame%self.fps==0:
+				if (self.currentFrame%self.fps==0 and self.currentFrame>590):
 					self.Q.put(frame)
-					print("Logged: "+str(self.currentFrame)+"frameid: " +str(frame[25][42]))
+					print("Qeued: "+str(self.currentFrame)+"frameid: " +str(frame[25][42]))
 				self.currentFrame+=1
 
 			else:
@@ -251,8 +274,8 @@ class FileVideoStream():
 
 	def read(self):
 		# return next frame in the queue
-		print(self.stopped)
-		return self.stopped, self.Q.get()
+		print(self.running())
+		return self.Q.get()
 
 	# Insufficient to have consumer use while(more()) which does
 	# not take into account if the producer has reached end of
@@ -274,6 +297,7 @@ class FileVideoStream():
 		self.stopped = True
 		# wait until stream resources are released (producer thread might be still grabbing frame)
 		self.thread.join()
+
 
 
 				
