@@ -1,0 +1,7 @@
+{% for tag in tag_list %}
+     <div>
+     	<button id="snap" onclick="snap()" class="side-elem button">Snap {{tag.tag_val}}</button>
+     	<button id="save" onclick="save({{tag.tag_num}})" class="side-elem button">Save {{tag.tag_val}}</button>
+	<br>
+     </div>
+{% endfor %}

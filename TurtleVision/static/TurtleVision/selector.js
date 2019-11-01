@@ -45,7 +45,7 @@ $('select[name=anal-select]').change(function(){
 				'anal_choice':anal_choice
 			},
 			success: function(data){
-				$("#tags").val(data);
+				$("#tags").html(data);
 			}
 		});
 	}

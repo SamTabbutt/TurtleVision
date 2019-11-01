@@ -9,18 +9,16 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
-        <script>window.HELP_IMPROVE_VIDEOJS = false;</script>
-        <link href="//vjs.zencdn.net/7.3.0/video-js.min.css" rel="stylesheet">
-        <script src="//vjs.zencdn.net/7.3.0/video.min.js"></script>
+	
 	{% load static %}
-	<link rel="shortcut icon" href="{% static 'TurtleVision/images/logo.jpg' %}">
+	<link rel="shortcut icon" href="{% static 'TurtleVision/images/Tlogo.png' %}">
 	<link rel="stylesheet" href="{% static 'TurtleVision/style.css' now "U" %}">
 </head>
 
 <body>
 	<div class = "container-fluid">
-		<div class="row">
-			<div class = "left-set side-panel sidebar-nav column">
+		<div class="">
+			<div class = "left-set side-panel sidebar-nav">
 			{% block sidebar %}
                                         {% load static %}
 					<a class="side-elem" href="http://www.ceibahamas.org/"><img src={%static 'TurtleVision/images/TLogo.png'%} class="logo"></a>
@@ -34,12 +32,12 @@
 					{% block contHead %}
 					{% endblock %}
 				</div>
-			<div class = "main-cont column"> 
+			<div class = "main-cont"> 
 				
 				{% block content %}
 				{% endblock %}
 			</div>
-			<div class = "right-set side-panel column">
+			<div class = "right-set side-panel">
 				{% load static %}
 				<a class="side-elem" href="http://www.ceibahamas.org/"><img src={%static 'TurtleVision/images/Tlogo.png'%} class="logo"></a>
 				{% block sidecont %}
@@ -47,6 +45,11 @@
 			</div>
 		</div>
 	</div>
+
+<script>window.HELP_IMPROVE_VIDEOJS = false;</script>
+<script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
+{% block javascript %}
+{% endblock %}
 
 </body>
 </html>

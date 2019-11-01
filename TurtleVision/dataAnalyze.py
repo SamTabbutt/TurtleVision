@@ -144,9 +144,9 @@ class applyModel():
 
 		newTag = tagAssign(tag = get_tag, accuracy=0, assigned_by= thisModel)
 		
-		#newTag.save()
+		newTag.save()
 
-		#second.tag.add(newTag)
+		second.tag.add(newTag)
 
 		print("done")
 		

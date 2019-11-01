@@ -1,4 +1,4 @@
-from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
+from django.http import HttpResponse, StreamingHttpResponse, JsonResponse, HttpResponseRedirect
 
 from django.views.generic.edit import FormView
 from django.views.generic import TemplateView
@@ -8,9 +8,11 @@ from django.views import View
 from django.shortcuts import render, get_object_or_404
 
 from .models import Session, Movie, SecondDat, tag, tagAssign, Frame, tagType
-from .forms import VideoForm
+from .forms import SessionForm, VideoForm
 from .datamanage import CSV, FrameCreate, MovieHLSCreate, fillSession
 from .dataAnalyze import initiateModel, applyModel
+
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 
 import gc
 
@@ -28,7 +30,10 @@ import gc
 
 class index(View):
 	def get(self,request):
-
+		
+		num_surface = Frame.objects.filter(tag__tag_type__name = "SurfaceTime").count()
+		num_breath = Frame.objects.filter(tag__tag_type__name = "BreathStatus").count()
+		num_flipper = Frame.objects.filter(tag__tag_type__name = "FlipperBeat").count()
 		num_sessions = Session.objects.all().count()
 		num_movies = Movie.objects.all().count()
 		num_frames = Frame.objects.all().count()
@@ -37,6 +42,9 @@ class index(View):
 			'num_sessions':num_sessions,
 			'num_movies':num_movies,
 			'num_frames':num_frames,
+			'num_breath':num_breath,
+			'num_flipper':num_flipper,
+			'num_surface':num_surface,
 		}
 
 		return render(request, 'index.html', context=context)
@@ -62,37 +70,56 @@ class index(View):
 	# Required input from request -- SessionInfo, Movie list, log.csv with precise format
 
 #inspired by-- http://www.learningaboutelectronics.com/Articles/How-to-create-a-video-uploader-with-Python-in-Django.php https://realpython.com/python-csv/
+#adapted from-- https://simpleisbetterthancomplex.com/tutorial/2016/11/22/django-multiple-file-upload-using-ajax.html
 
-class upload(FormView):
-	form_class = VideoForm
-	template_name = 'upload.html'
-	success_url = 'success/'
+class upload(View):
+	def get(self, request):
+		session_choices = Session.objects.all()
+		return render(self.request, 'upload.html',{'session_choices':session_choices})
 	
 	def post(self,request,*args,**kwargs):
-		form_class = self.get_form_class()
-		form = self.get_form(form_class)
-		vid_files = request.FILES.getlist('video_file_field')
+		session_form = SessionForm(request.POST)       
 
-		current_ses = Session(record_date = request.POST.get('session_date'), loc_name = request.POST.get('session_loc'), csv_log = request.FILES['CSV_file_field'])
-		current_ses.save()        
-
-		if form.is_valid():
-			fStore = MovieHLSCreate(vid_files)
-			fStore.storeMovies(current_ses)
-              
-			csvIns = CSV(current_ses)
-			csvIns.createSeconds()
-			return self.form_valid(form)
+		if session_form.is_valid():
+			current_ses = Session(record_date = request.POST.get('session_date'), loc_name = request.POST.get('session_loc'), turtle_name = request.POST.get('session_turtle'))
+			current_ses.save()
+			session_choices = Session.objects.all()
+			return render(self.request, 'upload.html',{'session_choices':session_choices})
 		else:
-			return self.form_invalid(form)
+			return HttpResponse('Nothing Changed')
 
-
-#uploadSuccess is called when upload view has processed a new Session with subcategories successfully
-
-def uploadSuccess(request):
-	return render(request, 'uploadSuccess.html', {})
-
-
+	#Obviously overkill on the code. For now leave it like this, but eventually deal with all file uploads with same method
+	@csrf_exempt
+	def videos(request):
+		if request.method == 'POST':
+			form = VideoForm(request.POST, request.FILES)
+			print(request.POST.get('session_pk'))
+			if form.is_valid():
+				print("valid form")
+				fStore = MovieHLSCreate(request.FILES['video_file_field'])
+				current_ses_pk = request.POST.get('session_pk')
+				current_ses = Session.objects.get(pk=current_ses_pk)
+				fStore.storeMovies(current_ses)
+				data ={'is_valid':True}
+			else:
+				data ={'is_valid':False}
+			return JsonResponse(data)
+	@csrf_exempt
+	def csv(request):
+		if request.method =='POST':
+			form = CSVForm(request.POST, request.FILES)
+			print(request.POST.get('session_pk'))
+			if form.is_valid():
+				print("valid form")
+				current_ses_pk = request.POST.get('session_pk')
+				current_ses = Session.objects.get(pk=current_ses_pk)
+				current_ses.csv_log = request.FILES['csv_file_field']
+				csvIns = CSV(current_ses)
+				csvIns.createSeconds()
+				data ={'is_valid':True}
+			else:
+				data ={'is_valid':False}
+			return JsonResponse(data)
 
 
 
@@ -145,7 +172,7 @@ def load_tags(request):
      tag_type_recieved = request.GET.get('anal_choice')
      tags = tag.objects.filter(tag_type__pk = tag_type_recieved)
 
-     return JsonResponse(tags,safe=False)
+     return render(request, 'train_seg/tag_list.html', {'tag_list':tags})
 
 
 

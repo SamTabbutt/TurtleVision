@@ -2,34 +2,73 @@
 
 {% block contHead %}
 
-<h1 class = "head-elem">Admin Upload</h1>
+	<h1 class = "head-elem">Admin Upload</h1>
 
 {% endblock %}
 
 {% block content %}
 
-<h4>Upload new session</h4>
+	<h4>Upload new session</h4>
 
-<iframe name="file-upload" src="" style="border: none; visibility: hidden; width: 0; height: 0; position: absolute; top: 0; left: 0;"></iframe>
+	<iframe name="file-upload" src="" style="border: none; visibility: hidden; width: 0; height: 0; position: absolute; top: 0; left: 0;"></iframe>
 
-<form id = "uploadForm" action="" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <label class="cent" for= "session_date">Date recorded: </label>
-    <input class="cent button" id="session_date" type="date" name="session_date" value="">
-    <br>
-    <label class="cent" for= "session_loc">Location: </label>
-    <input class="cent button" id="session_loc" type="text" name="session_loc" macxlength="100">
-    <br>
-    <label class="cent" for= "video_file_field">Videos: </label>
-    <input class="cent button" id="video_file_field" type="file" name="video_file_field" value=" " multiple>
-    <br>
-    <label class="cent" for= "CSV_file_field">Log: </label>
-    <input class="cent button" id="CSV_file_field" type="file" name="CSV_file_field" value=" ">
-    <br>
-    <input class="cent button" type="submit" value="Submit">
-</form>
+	<form id = "uploadForm" action="" method="post" enctype="multipart/form-data">
+    		{% csrf_token %}
 
+    		<label class="cent" for= "session_date">Date recorded: </label>
+    		<input class="cent button" id="session_date" type="date" name="session_date" value="">
+    		<br>
+
+    		<label class="cent" for= "session_loc">Location: </label>
+    		<input class="cent button" id="session_loc" type="text" name="session_loc" maxlength="100">
+    		<br>
+
+    		<label class="cent" for="session_turtle">Turtle Name: </label>
+    		<input class="cent button" id="session_turtle" type="text" name="session_turtle" maxlength="100">
+    		<br>
+    
+    		<input class="cent button" type="submit" value="Submit">
+	</form>
+
+	<label class="cent" for= "session-select">Select Session for upload: </label>
+	<select class="cent button" name="session-select" id="session-select">
+     		<option value="">Select Session</option>
+     		{% for sess in session_choices %}
+          		<option id="{{sess.pk}}" value="{{sess.pk}}" data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>{{sess}}</option>
+     		{% endfor %}
+	</select>
+	<br>
+
+
+	<!-- Consider changing to "upload files" which accepts videos and csv, then can create second data based on a chosen CSV-->
+	<label class="cent" for= "video_file_field">Videos: </label>
+	<button id = "videoButton" type="button" class="button cent js-upload-photos"> 
+		Upload Videos
+	</button>
+	<input class="cent button" id="video_file_field" type="file" name="video_file_field" style="display: none;" multiple data-url="{% url 'TurtleVision:videoUpload' %}"  data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+	<br>
+
+	<label class="cent" for= "CSV_file_field">Log: </label>
+	<button id = "csvButton" type="button" class="button cent js-upload-photos"> 
+		Upload CSV
+	</button>
+	<input class="cent button" id="CSV_file_field" type="file" name="CSV_file_field" style="display: none;" data-url="{% url 'TurtleVision:csvUpload' %}"  data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+	<br>
+
+
+	<div class = "upload-progress button">
+		<p class = "label">0%</p>
+		<p class = "time">0</p>
+		<div class = "bar button"></div>
+	</div>
+
+{% endblock %}
+
+{% block javascript %}
 {% load static %}
-<script src={% static "TurtleVision/uploadBar.js" %}></script>
+	<script src={% static "TurtleVision/jquery-file-uploader/jQuery-File-Upload-9.14.1/js/vendor/jquery.ui.widget.js" %}></script>
+	<script src={% static "TurtleVision/jquery-file-uploader/jQuery-File-Upload-9.14.1/js/jquery.iframe-transport.js" %}></script>
+	<script src={% static "TurtleVision/jquery-file-uploader/jQuery-File-Upload-9.14.1/js/jquery.fileupload.js" %}></script>
 
+	<script src={% static "TurtleVision/uploadBar.js" %}></script>
 {% endblock %}
