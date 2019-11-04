@@ -56,7 +56,7 @@ class tagType(models.Model):
 		return str(self.name)
 
 class tag(models.Model):
-	tag_type=models.ForeignKey(tagType, on_delete=models.CASCADE, null=True,blank=True)
+	tag_type=models.ForeignKey(tagType, on_delete=models.CASCADE)
 	tag_val=models.CharField(max_length=20)
 	tag_num=models.IntegerField(default=0)
 	
@@ -105,7 +105,7 @@ class SecondDat(models.Model):
 
 class Frame(models.Model):
         secondCount = models.CharField(max_length=20)        
-        tag = models.ForeignKey(tag, on_delete=models.CASCADE, blank=True, null=True)
+        tag = models.ForeignKey(tag, on_delete=models.CASCADE)
         imgData = models.BinaryField(blank=True)
         movie = models.ForeignKey(Movie, on_delete=models.CASCADE, blank=True, null=True)
 

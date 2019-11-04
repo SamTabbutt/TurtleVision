@@ -16,6 +16,7 @@ import base64      #included in python 3
 from mxnet.gluon.data.vision import transforms as trans
 from mxnet import nd
 from threading import Thread
+from multiprocessing import Process
 import time
 from queue import Queue
 
@@ -26,7 +27,6 @@ from django.http import HttpResponse
 from .dataAnalyze import applyModel
 
 import os
-import gc
 
 
 
@@ -169,7 +169,7 @@ class fillSession():
 	def __init__(self,session, anal):
 		self.session = session
 		self.anal = anal
-	
+#huzzah https://www.pyimagesearch.com/2019/09/09/multiprocessing-with-opencv-and-python/	
 	def occupySeconds(self):
 		model_in_use = learningModel.objects.filter(tag_type__pk=self.anal).order_by('-create_date_time')[0]
 		movie_list = Movie.objects.filter(session__pk = self.session)
@@ -179,26 +179,34 @@ class fillSession():
 			second_list = SecondDat.objects.filter(movie__pk = movie.pk)
 			src = '/media/'+str(movie.videofile)
 			RootSrc = "C:/Users/samta/TurtleCam"+src
-			print(RootSrc)
-			newStream = FileVideoStream(RootSrc).start()
-			for second in second_list:
-				sec = second.seg_time
-				(h, m, s) = str(sec).split(':')
-				result = int(h) * 3600 + int(m) * 60 + int(s)
-				print(src)
-				hasFrames = newStream.more()
-				print(hasFrames)
-				if(hasFrames and result>590):
-					image = newStream.read()
-					(hasFrames,nd_img) = getNdFromFrame(hasFrames,image)
-					application.saveSecond(nd_img, sec, second)
-			newStream.stop()
-			gc.collect()
+			frameQueue = FileVideoStream(RootSrc).start()
+			process = Process(target=self.secondLoop, args=(frameQueue, second_list))
+			process.start()
+			process.join()
 		elapsed_time = time.time() - start_time
 		print(elapsed_time)
 
-#for movie in movie_list:
-#			second_list = SecondDat.objects.filter(movie__pk = movie.pk)			
+	def secondLoop(self, queue, second_list):
+		for second in second_list:
+			if queue.running():
+				sec = second.seg_time
+				image = queue.read()
+				(hasFrames,nd_img) = getNdFromFrame(True, image)
+				print(str(sec)+": analyzing")
+				application.saveSecond(nd_img, sec, second)
+			else:
+				queue.stop()
+				break
+
+
+#def occupySeconds(self):
+#		model_in_use = learningModel.objects.filter(tag_type__pk=self.anal).order_by('-create_date_time')[0]
+#		movie_list = Movie.objects.filter(session__pk = self.session)
+#		application = applyModel(self.anal,model_in_use.parameters_dir,self.session)
+#		start_time = time.time()
+#		for movie in movie_list:
+#			second_list = SecondDat.objects.filter(movie__pk = movie.pk)
+#			
 #			for second in second_list:
 #				sec = second.seg_time
 #				src = '/media/'+str(second.movie.videofile)
@@ -231,15 +239,18 @@ class FileVideoStream():
 		# the video file
 		self.Q = Queue(maxsize=queue_size)
 		# intialize thread
-		self.thread = Thread(target=self.update, args=())
-		self.thread.daemon = True
+		#self.thread = Thread(target=self.update, args=())
+		self.process = Process(target=self.update, args=())
+		#self.thread.daemon = True
 
 	def start(self):
 		print("current frame:" +str(self.currentFrame))
 		print("fps:"+str(self.fps))
 
 		# start a thread to read frames from the file video stream
-		self.thread.start()
+		# self.thread.start()
+		self.process.start()
+		self.process.join()
 		return self
 
 	def update(self):
@@ -262,9 +273,9 @@ class FileVideoStream():
 				if self.transform:
 					frame = self.transform(frame)
 
-				if (self.currentFrame%self.fps==0 and self.currentFrame>590):
+				if self.currentFrame%self.fps==0:
 					self.Q.put(frame)
-					print("Qeued: "+str(self.currentFrame)+"frameid: " +str(frame[25][42]))
+					print("Queued: "+str(self.currentFrame)+"frameid: " +str(frame[25][42]))
 				self.currentFrame+=1
 
 			else:
@@ -274,7 +285,7 @@ class FileVideoStream():
 
 	def read(self):
 		# return next frame in the queue
-		print(self.running())
+		print(self.stopped)
 		return self.Q.get()
 
 	# Insufficient to have consumer use while(more()) which does
@@ -297,7 +308,6 @@ class FileVideoStream():
 		self.stopped = True
 		# wait until stream resources are released (producer thread might be still grabbing frame)
 		self.thread.join()
-
 
 
 				
