@@ -1,0 +1,6 @@
+*.pyc
+__ pycache __/
+media/
+ffmpeg/
+migrations/
+static/admin/
