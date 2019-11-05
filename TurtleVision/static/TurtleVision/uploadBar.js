@@ -8,8 +8,6 @@ $(function () {
   var startTime, curTime;
   /* 2. INITIALIZE THE FILE UPLOAD COMPONENT */
   $("#video_file_field").fileupload({
-    sequentialUploads: true,
-    maxChunkSize:10000000,
     dataType: 'json',
     start: function(e) {
 	startTime = new Date();

@@ -20,6 +20,11 @@ from multiprocessing import Process
 import time
 from queue import Queue
 
+from numba import cuda
+import numba
+
+import django
+django.setup()
 from .models import SecondDat, Session, Movie, Frame, tag, learningModel
 from django.conf import settings
 from django.http import HttpResponse
@@ -169,128 +174,81 @@ class fillSession():
 	def __init__(self,session, anal):
 		self.session = session
 		self.anal = anal
-#huzzah https://www.pyimagesearch.com/2019/09/09/multiprocessing-with-opencv-and-python/	
+		self.model_in_use = learningModel.objects.filter(tag_type__pk=self.anal).order_by('-create_date_time')[0]
+		self.application = applyModel(self.anal,self.model_in_use.parameters_dir,self.session)
+	@cuda.jit(forceobj=True)
 	def occupySeconds(self):
-		model_in_use = learningModel.objects.filter(tag_type__pk=self.anal).order_by('-create_date_time')[0]
 		movie_list = Movie.objects.filter(session__pk = self.session)
-		application = applyModel(self.anal,model_in_use.parameters_dir,self.session)
 		start_time = time.time()
+		jobs = []
 		for movie in movie_list:
-			second_list = SecondDat.objects.filter(movie__pk = movie.pk)
-			src = '/media/'+str(movie.videofile)
-			RootSrc = "C:/Users/samta/TurtleCam"+src
-			frameQueue = FileVideoStream(RootSrc).start()
-			process = Process(target=self.secondLoop, args=(frameQueue, second_list))
-			process.start()
-			process.join()
-		elapsed_time = time.time() - start_time
-		print(elapsed_time)
-
-	def secondLoop(self, queue, second_list):
+			#p = Process(target = self.fillMovie, args=(movie,))
+			#jobs.append(p)
+			#p.start()
+			#p.join()
+			self.fillMovie(movie)
+	@cuda.jit(forceobj=True)
+	def fillMovie(self,movie):
+		print("starting process for movie:"+str(movie))	
+		src = '/media/'+str(movie.videofile)
+		RootSrc = "C:/Users/samta/TurtleCam"+src
+		queue = ndQueue(RootSrc,str(movie)).start()
+		second_list = SecondDat.objects.filter(movie__pk = movie.pk).order_by('seg_time')
+		time.sleep(0.5)				
 		for second in second_list:
 			if queue.running():
 				sec = second.seg_time
-				image = queue.read()
-				(hasFrames,nd_img) = getNdFromFrame(True, image)
-				print(str(sec)+": analyzing")
-				application.saveSecond(nd_img, sec, second)
+				nd_img = queue.read()
+				print(str(movie)+": "+str(sec)+": analyzing with nd frame check: "+str(nd_img[2][54][7]))
+				self.application.saveSecond(nd_img, sec, second)
 			else:
 				queue.stop()
 				break
+			
+			
 
 
-#def occupySeconds(self):
-#		model_in_use = learningModel.objects.filter(tag_type__pk=self.anal).order_by('-create_date_time')[0]
-#		movie_list = Movie.objects.filter(session__pk = self.session)
-#		application = applyModel(self.anal,model_in_use.parameters_dir,self.session)
-#		start_time = time.time()
-#		for movie in movie_list:
-#			second_list = SecondDat.objects.filter(movie__pk = movie.pk)
-#			
-#			for second in second_list:
-#				sec = second.seg_time
-#				src = '/media/'+str(second.movie.videofile)
-#				tag = 0
-#				(h, m, s) = str(sec).split(':')
-#				result = int(h) * 3600 + int(m) * 60 + int(s)
-#				print(src)
-#				newFrame = FrameCreate(result, src, tag)
-#				(hasFrames,image) = newFrame.getFrameFromSec()
-#				(hasFrames,nd_img) = getNdFromFrame(hasFrames,image)
-#				print(hasFrames)
-#				if(hasFrames):
-#					application.saveSecond(nd_img, sec, second)
-#		elapsed_time = time.time() - start_time
-#		print(elapsed_time)
-				
-
-class FileVideoStream():
-	def __init__(self, path, transform=None, queue_size=128):
-		# initialize the file video stream along with the boolean
-		# used to indicate if the thread should be stopped or not
+class ndQueue():
+	def __init__(self,path, movieName, queue_size=128):
 		self.stream = cv2.VideoCapture(path)
 		self.stopped = False
-		self.transform = transform
+		self.movie = movieName
 
 		self.fps = int(round(self.stream.get(cv2.CAP_PROP_FPS)))
 		self.currentFrame=0
-
-		# initialize the queue used to store frames read from
-		# the video file
 		self.Q = Queue(maxsize=queue_size)
-		# intialize thread
-		#self.thread = Thread(target=self.update, args=())
-		self.process = Process(target=self.update, args=())
-		#self.thread.daemon = True
-
+		self.thread = Thread(target=self.update, args=())
+	
 	def start(self):
-		print("current frame:" +str(self.currentFrame))
-		print("fps:"+str(self.fps))
+		print("starting queue for " +self.movie +" with fps: "+str(self.fps))
+		self.thread.start()
 
-		# start a thread to read frames from the file video stream
-		# self.thread.start()
-		self.process.start()
-		self.process.join()
 		return self
-
+	@cuda.jit(forceobj=True)
 	def update(self):
-		# keep looping infinitely
 		while True:
-			# if the thread indicator variable is set, stop the
-			# thread
 			if self.stopped:
 				break
-
-			# otherwise, ensure the queue has room in it
 			if not self.Q.full():
-				# read the next frame from the file
-
-				(grabbed, frame) = self.stream.read()
-
+				(grabbed,frame)=self.stream.read()
+				
 				if not grabbed:
 					self.stopped = True
-					
-				if self.transform:
-					frame = self.transform(frame)
-
-				if self.currentFrame%self.fps==0:
-					self.Q.put(frame)
-					print("Queued: "+str(self.currentFrame)+"frameid: " +str(frame[25][42]))
+			
+				if grabbed and self.currentFrame%self.fps==0:
+					(hasFrames,nd_img)=getNdFromFrame(grabbed,frame)
+					self.Q.put(nd_img)
+					print("Queued frame: "+str(self.currentFrame)+" for second: "+str(self.currentFrame/30)+" for movie: "+self.movie +"with an nd check val of: "+str(nd_img[2][54][7]))
 				self.currentFrame+=1
-
 			else:
-				time.sleep(0.1)  # Rest for 10ms, we have a full queue
-
+				time.sleep(0.1)
 		self.stream.release()
-
+	
 	def read(self):
 		# return next frame in the queue
-		print(self.stopped)
+		print("Queue for " +self.movie+" is stopped: " +str(self.stopped))
 		return self.Q.get()
 
-	# Insufficient to have consumer use while(more()) which does
-	# not take into account if the producer has reached end of
-	# file stream.
 	def running(self):
 		return self.more() or not self.stopped
 
@@ -309,9 +267,8 @@ class FileVideoStream():
 		# wait until stream resources are released (producer thread might be still grabbing frame)
 		self.thread.join()
 
-
+	
 				
-
 
 #TO-DO: finish for deployment (for first deploy). At the moment in its first stage
 #adapting movie upload so the movies can be in HLS format.
