@@ -7,7 +7,7 @@
 import csv
 import sys
 import time
-import cv2      #need pip install
+#import cv2      #need pip install
 import numpy as np      #need pip install
 import ffmpeg #need pip install
 import pickle      #included in python 3
@@ -20,18 +20,29 @@ from multiprocessing import Process
 import time
 from queue import Queue
 
-from numba import cuda
+import skvideo.io
+import skvideo.datasets
+
+skvideo.setFFmpegPath('ffmpeg-4.0.2-win64-static/bin/')
+
+import pyopencl as cl
+
+import ffmpeg
+
+from numba import cuda, jit
 import numba
 
 import django
 django.setup()
 from .models import SecondDat, Session, Movie, Frame, tag, learningModel
+from .GPUQueue import ndQueue
 from django.conf import settings
 from django.http import HttpResponse
 
 from .dataAnalyze import applyModel
 
 import os
+import gc
 
 
 
@@ -176,25 +187,31 @@ class fillSession():
 		self.anal = anal
 		self.model_in_use = learningModel.objects.filter(tag_type__pk=self.anal).order_by('-create_date_time')[0]
 		self.application = applyModel(self.anal,self.model_in_use.parameters_dir,self.session)
-	@cuda.jit(forceobj=True)
+
 	def occupySeconds(self):
 		movie_list = Movie.objects.filter(session__pk = self.session)
 		start_time = time.time()
 		jobs = []
-		for movie in movie_list:
-			#p = Process(target = self.fillMovie, args=(movie,))
-			#jobs.append(p)
-			#p.start()
-			#p.join()
-			self.fillMovie(movie)
-	@cuda.jit(forceobj=True)
+		platforms = cl.get_platforms()
+		print(len(platforms))
+		print(platforms)
+		print(platforms[1].get_devices(cl.device_type.GPU))
+		ctx = cl.Context(
+			dev_type=cl.device_type.GPU,
+			properties=[(cl.context_properties.PLATFORM, platforms[0])])
+
+		with cl.CommandQueue(self.cl_context) as queue:
+			for movie in movie_list:
+				self.fillMovie(movie)
+
 	def fillMovie(self,movie):
 		print("starting process for movie:"+str(movie))	
+			
 		src = '/media/'+str(movie.videofile)
 		RootSrc = "C:/Users/samta/TurtleCam"+src
 		queue = ndQueue(RootSrc,str(movie)).start()
 		second_list = SecondDat.objects.filter(movie__pk = movie.pk).order_by('seg_time')
-		time.sleep(0.5)				
+		time.sleep(10)				
 		for second in second_list:
 			if queue.running():
 				sec = second.seg_time
@@ -204,68 +221,8 @@ class fillSession():
 			else:
 				queue.stop()
 				break
+		gc.collect()
 			
-			
-
-
-class ndQueue():
-	def __init__(self,path, movieName, queue_size=128):
-		self.stream = cv2.VideoCapture(path)
-		self.stopped = False
-		self.movie = movieName
-
-		self.fps = int(round(self.stream.get(cv2.CAP_PROP_FPS)))
-		self.currentFrame=0
-		self.Q = Queue(maxsize=queue_size)
-		self.thread = Thread(target=self.update, args=())
-	
-	def start(self):
-		print("starting queue for " +self.movie +" with fps: "+str(self.fps))
-		self.thread.start()
-
-		return self
-	@cuda.jit(forceobj=True)
-	def update(self):
-		while True:
-			if self.stopped:
-				break
-			if not self.Q.full():
-				(grabbed,frame)=self.stream.read()
-				
-				if not grabbed:
-					self.stopped = True
-			
-				if grabbed and self.currentFrame%self.fps==0:
-					(hasFrames,nd_img)=getNdFromFrame(grabbed,frame)
-					self.Q.put(nd_img)
-					print("Queued frame: "+str(self.currentFrame)+" for second: "+str(self.currentFrame/30)+" for movie: "+self.movie +"with an nd check val of: "+str(nd_img[2][54][7]))
-				self.currentFrame+=1
-			else:
-				time.sleep(0.1)
-		self.stream.release()
-	
-	def read(self):
-		# return next frame in the queue
-		print("Queue for " +self.movie+" is stopped: " +str(self.stopped))
-		return self.Q.get()
-
-	def running(self):
-		return self.more() or not self.stopped
-
-	def more(self):
-		# return True if there are still frames in the queue. If stream is not stopped, try to wait a moment
-		tries = 0
-		while self.Q.qsize() == 0 and not self.stopped and tries < 5:
-			time.sleep(0.1)
-			tries += 1
-
-		return self.Q.qsize() > 0
-
-	def stop(self):
-		# indicate that the thread should be stopped
-		self.stopped = True
-		# wait until stream resources are released (producer thread might be still grabbing frame)
-		self.thread.join()
 
 	
 				

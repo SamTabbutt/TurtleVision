@@ -4,3 +4,4 @@ media/
 ffmpeg/
 migrations/
 static/admin/
+ffmpeg-4.0.2-win64-static/
