@@ -1,14 +1,11 @@
 from django import forms
 
-class SessionForm(forms.Form):
+class VideoForm(forms.Form):
      session_date = forms.DateField()
      session_loc = forms.CharField(max_length=20)
-     session_turtle = forms.CharField(max_length=20)
+     video_file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
+     CSV_file_field = forms.FileField()
 
-class VideoForm(forms.Form):
-	session_pk = forms.CharField()
-	video_file_field = forms.FileField()
-
-class CSVForm(forms.Form):
-	session_pk = forms.CharField()
-	csv_file_field = forms.FileField()
+class VideoSelectForm(forms.Form):
+     session_select = forms.CharField(max_length=100)
+     movie_select = forms.CharField(max_length=100)

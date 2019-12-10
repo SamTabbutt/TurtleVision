@@ -12,36 +12,14 @@
 	    <div class = "welcome-display">
 		<!--Insert video loop for welcome. Exists in same format as view video-->
 		<h4> A machine-learning interface for wildlife observation </h4>
-			<h3 class ="section-head"> Browse the content of Turtle Vision: </p>
-			<div class = "dynamic-data row cent">
-				{% load static %}
-				<!--<img class = "background" src = {%static 'TurtleVision/images/TLogo.png'%}>-->
-				<div class = "info cent 1">
-					<p class = "type"> Current number of sessions uploaded:</p>
-					<p class = "data"> {{num_sessions}} </p>
-				</div>
-				<div class = "info cent 2">
-					<p class = "type"> Current number of movies uploaded:</p>
-					<p class = "data"> {{num_movies}} </p>
-				</div>
-				<div class = "info cent 3">
-					<p class = "type"> Current number of frames logged:</p>
-					<p class = "data"> {{num_frames}} </p>
-				</div>
-				<div class = "info cent 4">
-					<p class = "type"> Current number of "Breath Status" frames logged:</p>
-					<p class  = "data"> {{num_breath}} </p>
-				</div>
-				<div class = "info cent 5">
-					<p class = "type"> Current number of "Flipper" frames uploaded:</p>
-					<p class = "data"> {{num_flipper}} </p>
-				</div>
-				<div class = "info cent 6">
-					<p class = "type"> Current number of "Surface" frames uploaded:</p>
-					<p class = "data"> {{num_surface}} </p>
-				</div>
-				
-			</div>
+		<div class = "dynamic-data">
+			<h3 class ="section-head"> Here is some dynamic data </p>
+			<p> Current number of sessions uploaded: {{num_sessions}}</p>
+			<p> Current number of videos uploaded: {{num_movies}}</p>
+			<p> Current number of frames logged: {{num_frames}}</p>
+			{% load static %}
+			<img src = {%static 'TurtleVision/images/TLogo.png'%}>
+
 		</div>
 	    </div>
 {% endblock %}

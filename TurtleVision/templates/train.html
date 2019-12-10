@@ -14,6 +14,7 @@
      </div>
 
      <select class="side-elem button" name="anal-select" id="anal-list">
+     	<option value="">Select Analysis</option>
 	<option value="">Just Watch</option>
 	<option value="">Direct Analysis</option>
      	{% for tag in tag_choices %}
@@ -22,16 +23,44 @@
      </select>
 
      <div>
-         <p class = "side-elem">Second of Frame:</p>
-         <p id="secToLog" class="side-elem"></p>
+         <p id="secToLog" class="side-elem">Sec</p>
      </div>
 
      <div>
      	<canvas id="snapcanvas" name="snapcanvas" style="width:90%"></canvas>
      </div>
 
-     <div id = "tags" tag_choices_list = "{% url 'TurtleVision:ajax_load_tags' %}" nonvalidate>
+<div id = "tags" tag_choices_list = "{% url 'TurtleVision:ajax_load_tags' %}" val={{tags}} nonvalidate>
+<!--TO-DO: make this auto-populated based on selection made in 'anal-selector'. Involves understanding passing information between html within js-->
+     <div>
+     	<button id="snapBreath" onclick="snap()" class="side-elem button BreathStatus">Breath</button>
+     	<button id="saveBreath" onclick="save(1)" class="side-elem button BreathStatus">Save Breath</button>
      </div>
+
+     <div>
+     	<button id="snapApnea" onclick="snap()" class="side-elem button BreathStatus">Apnea</button>
+     	<button id="saveApnea" onclick="save(2)" class="side-elem button BreathStatus">Save Apnea</button>
+     </div>
+
+     <div>
+     	<button id="snapDive" onclick="snap()" class="side-elem button SurfaceTime">Diving</button>
+     	<button id="saveDive" onclick="save(3)" class="side-elem button SurfaceTime">Save Dive</button>
+     </div>
+
+     <div>
+     	<button id="snapSurf" onclick="snap()" class="side-elem button SurfaceTime">On Surface</button>
+     	<button id="saveSurf" onclick="save(4)" class="side-elem button SurfaceTime">Save On Surface</button>
+     </div>
+</div>
+
+
+
+
+<script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
+		{% load static %}
+		<script src={% static "TurtleVision/capturingFunctions.js" %}></script>
+                <script src={% static "TurtleVision/videoJSExt.js" %}></script>
+		<script src={% static "TurtleVision/selector.js" %}></script>
      
 {% endblock %}
 
@@ -63,16 +92,5 @@
 		<p>No video</p>
       {% endif %}
 
-{% endblock %}
-
-{% block javascript %}
-
-        <link href="//vjs.zencdn.net/7.3.0/video-js.min.css" rel="stylesheet">
-        <script src="//vjs.zencdn.net/7.3.0/video.min.js"></script>
-
-	{% load static %}
-	<script src={% static "TurtleVision/capturingFunctions.js" %}></script>
-        <script src={% static "TurtleVision/videoJSExt.js" %}></script>
-	<script src={% static "TurtleVision/selector.js" %}></script>
 {% endblock %}
 

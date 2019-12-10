@@ -12,9 +12,7 @@ urlpatterns = [
     #upload is going to be a password protected page for admin to upload the videos and blank csv logs
     path('upload/', upload.as_view(), name='upload'),
 
-    path('upload/videos/', upload.videos, name='videoUpload'),
-
-    path('upload/csv/', upload.csv, name='csvUpload'),
+    path('upload/success/', views.uploadSuccess, name='success'),
 
     #train is a view class
     path('train/', train.as_view(), name='train'),

@@ -1,0 +1,10 @@
+
+{% if latest_session_list %}
+    <ul>
+    {% for session in latest_session_list %}
+        <li><a>{{ session.session_id }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}

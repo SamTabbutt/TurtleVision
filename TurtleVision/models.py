@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-import os
-from django.dispatch import receiver
 
 # The goal of the application is to:
 #	1) videos and .csv log uploaded by admin user
 # 	2) database containing frames updated by common user
 #	3) admin runs automatic analysis on video
+
+
+
 
 # Session: when the TurtleCam is deployed, everything that happens within the timeframe between 
 # when the turtle is deployed and the camera stops recording is in the context of a single session
@@ -14,13 +15,14 @@ from django.dispatch import receiver
 # Tracking when it was published and where the turtlecam was deployed
 
 class Session(models.Model):
-	record_date = models.DateField('date recorded', blank=True)
-	loc_name = models.CharField(null=True, max_length=15)
-	turtle_name = models.CharField(max_length = 20)
-	csv_log = models.FileField(upload_to='csv/', null=True, blank = True, verbose_name="")
+        record_date = models.DateField('date recorded', blank=True)
+        loc_name = models.CharField(null=True, max_length=15)
+        turtle_name = models.CharField(max_length = 20)
+        csv_log = models.FileField(upload_to='csv/', null=True, verbose_name="")
 
-	def __str__(self):
-		return str(self.pk)+self.loc_name+": "+str(self.record_date)
+        def __str__(self):
+                return str(self.pk)+self.loc_name+": "+str(self.record_date)
+
 
 # Movie: the session contains about twenty individual movie files that comprise the entirety of
 # the session. Each movie is associated with one session, but a single session may contain twenty movies
@@ -36,19 +38,6 @@ class Movie(models.Model):
 	def __str__(self):
         	return str(self.pk)+": "+str(self.videofile)
 
-
-@receiver(models.signals.post_delete, sender=Movie)
-def auto_delete_file_on_delete(sender, instance, **kwargs):
-    """
-    Deletes file from filesystem
-    when corresponding `MediaFile` object is deleted.
-    """
-    if instance.videofile:
-        if os.path.isfile(instance.videofile.path):
-            os.remove(instance.videofile.path)
-
-
-
 class tagType(models.Model):
 	name = models.CharField(max_length = 20)
 
@@ -56,12 +45,12 @@ class tagType(models.Model):
 		return str(self.name)
 
 class tag(models.Model):
-	tag_type=models.ForeignKey(tagType, on_delete=models.CASCADE)
-	tag_val=models.CharField(max_length=20)
-	tag_num=models.IntegerField(default=0)
-	
-	def __str__(self):
-		return str(self.tag_type)+":"+str(self.tag_val)
+        tag_type=models.ForeignKey(tagType, on_delete=models.CASCADE)
+        tag_val=models.CharField(max_length=20)
+        tag_num=models.IntegerField(default=0)
+
+        def __str__(self):
+             return str(self.tag_type)+":"+str(self.tag_val)
 
 class learningModel(models.Model):
 	tag_type = models.ForeignKey(tagType, on_delete=models.CASCADE)
@@ -69,7 +58,7 @@ class learningModel(models.Model):
 	parameters_dir = models.CharField(max_length = 100)
 
 	def __str__(self):
-		return str(self.tag_type)+":"+str(self.create_date_time)
+		return str(self.tag_type)+":"+str(create_date_time)
 
 class tagAssign(models.Model):
 	tag=models.ForeignKey(tag, on_delete=models.CASCADE)

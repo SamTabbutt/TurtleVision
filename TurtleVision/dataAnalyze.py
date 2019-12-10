@@ -117,34 +117,37 @@ class applyModel():
 		self.net.load_parameters(self.path, ctx=ctx)
 
 	def saveSecond(self,nd_img, sec, second):
+		print(str(sec)+" img shape:")
+		print(nd_img.shape)
 		reshaped = nd_img.as_in_context(model_ctx).reshape((1,num_inputs))
-		print(str(sec)+" img shape before rs:"+str(nd_img.shape)+" and after: "+str(reshaped.shape))
+		print(reshaped.shape)
 		output = self.net(reshaped)
 		print(output)
 		pred = nd.argmax(output, axis=1, keepdims=True)
+		print("0 for breath 1 for apnea:")
+		print(pred)
 		pred_np = pred.asnumpy()
 		
 		guess_val = pred_np[0,0]+1
 
-		print("1 for breath 2 for apnea:" +str(guess_val))
+		print(guess_val)
 		
 		get_tag = tag.objects.all().get(tag_num=guess_val)
 		
 		thisModelSet = learningModel.objects.filter(parameters_dir = self.path).order_by('-create_date_time')
 
+		print(thisModelSet)
+
 		thisModel=thisModelSet[0]
 
-		print("using model: " +str(thisModel))
+		print(thisModel)
 
 		newTag = tagAssign(tag = get_tag, accuracy=0, assigned_by= thisModel)
 		
-		newTag.save()
+		#newTag.save()
 
-		second.tag.add(newTag)
-		
-		if guess_val==1:
-			print("logged sec " +str(sec)+ " as breath")
-		else:
-			print("logged sec " +str(sec)+ " as apnea")
+		#second.tag.add(newTag)
+
+		print("done")
 		
 		return
