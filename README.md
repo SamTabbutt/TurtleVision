@@ -22,3 +22,5 @@ Program structure:
   Each interaction with the backend from the user interface is meant to communicate through jQuery Ajax requests or "vanilla"     HTTP requests through Django's request-response libraries.
 
 If you have come across this repository please feel free to reach out to me at samtabbutt@gmail.com with any questions or suggestions.
+
+This application was set up on an AWS Elastic Beanstalk kernel, but taken down after inactivity and clunky upload behaviors. 
