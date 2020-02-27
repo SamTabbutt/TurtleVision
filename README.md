@@ -1,7 +1,7 @@
 # TurtleVision
 This is very much so a work in progress.
 
-  TurtleVision is a project that is an effort to accomplish multiple goals through one web-experiment.
+  TurtleVision is a project that is an effort to accomplish multiple goals through one web-application.
 
   The most important function of the site is to collect and analyze marine ecology data via the process of deep neural network   learning.  
 
